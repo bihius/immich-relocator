@@ -1,4 +1,4 @@
-# Immich External Library Migration Script
+# Immich Relocator
 
 ## Overview
 This script moves files from the Immich `upload` directory to a defined external library folder and updates their corresponding entries in the PostgreSQL database.
@@ -14,7 +14,7 @@ This script moves files from the Immich `upload` directory to a defined external
 - File-level locking prevents concurrent runs from corrupting state
 - NOT EXISTS guard against the `(ownerId, libraryId, checksum)` UNIQUE
   constraint — content-duplicates already in the external library are
-  skipped cleanly instead of aborting and leaving a half-migrated state
+  skipped cleanly instead of aborting and leaving a half-relocated state
 - Restores the moved file to source if the DB UPDATE skips it (no leaked files)
 - Per-file progress + final summary counters
 
@@ -44,12 +44,12 @@ For better security, use a `~/.pgpass` file instead of `PGPASSWORD`.
 ## Usage
 
 ```bash
-chmod +x script.sh
+chmod +x core.sh
 
-./script.sh --dry-run --verbose   # preview what would happen
-./script.sh                       # apply changes
-./script.sh --verbose             # apply + log every file (not just summary)
-./script.sh --help                # show usage
+./core.sh --dry-run --verbose   # preview what would happen
+./core.sh                       # apply changes
+./core.sh --verbose             # apply + log every file (not just summary)
+./core.sh --help                # show usage
 ```
 
 The script will:
@@ -69,7 +69,7 @@ The script will:
 
 ## What the script does NOT do
 
-- It does not migrate files in trashed assets (`deletedAt IS NOT NULL`).
-- It does not migrate already-external assets (`libraryId IS NOT NULL`).
+- It does not relocate files in trashed assets (`deletedAt IS NOT NULL`).
+- It does not relocate already-external assets (`libraryId IS NOT NULL`).
 - It does not change checksums (correctly — see caveat above).
 - It does not handle the case of a duplicate already in the external library (gracefully skips with the NOT EXISTS guard).

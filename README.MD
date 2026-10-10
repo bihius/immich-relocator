@@ -4,7 +4,7 @@
 
 </div>
 
-Relocate all your picture & videos from the Immich internal folder to one or more external libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stack, faces, tags, etc.
+Relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
 
 ### Optional Advanced Features
 Immich Relocator can be configured with optional advanced features that will allow you to:
@@ -405,4 +405,4 @@ docker compose up -d immich-server
 
 Although a lot of manual hard work happened for this project, a large part of the Immich Relocator code was implemented by various AI models. Having said that, multiple developers, with actual blood in their veins, have envisioned the logic and tested the outcomes the best they could on their testing environments. 
 Every words contained in this readme file (apart from the prerequisites and troubleshooting tables) were written by a human hand, to ensure the usage is clear and with detailed examples.
-Please use Immich Relocator cautiously, especially during your first runs, and even more so after any Immich update.
+Please use Immich Relocator cautiously, especially during your first runs, and even more so, after any Immich update.

@@ -191,7 +191,7 @@ Done. Your Folder Restructure feature is now enabled. The most non-destructive w
 
 ---
 
-## Pseudo `UserShared` - The Immich Partner Fix  (Optional)
+## Pseudo `UserShared` - For the Immich Partner  (Optional)
 
 ⚠ For this to work you must also enable the Folder Restructure feature above.
 

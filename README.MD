@@ -22,7 +22,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 ## Table of Content
-- [The technical stuff](#the-technical-stuff)
+- [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
 - [Install, Configure & First Run](#install-configure--first-run)
 - [Folder Restructure (Optional, but recommended)](#folder-restructure-optional-but-recommended)
@@ -35,7 +35,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 <div align="center">
 
-## The technical stuff
+## The Technical Stuff
 
 </div>
 

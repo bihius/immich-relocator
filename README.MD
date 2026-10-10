@@ -69,7 +69,12 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
+<div align="center">
+
 ## Prerequisites
+
+</div>
+
 
 | #   | Requirement                                                                                                      | How to verify                                                        |
 | --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -84,7 +89,12 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
+<div align="center">
+
 ## Install, Configure & First Run
+
+</div>
+
 
 ### How to Install
 ℹ In these examples we will use Debian specific commands, please adjust according to your OS.
@@ -159,7 +169,12 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 
 ---
 
+<div align="center">
+
 ## Folder Restructure (Optional, but recommended)
+
+</div>
+
 
 Immich Relocator can reorganise the way your final folder structure will look like, just before to relocate the files to the external library.
 
@@ -210,7 +225,13 @@ Done. Your Folder Restructure feature is now enabled. The most non-destructive w
 
 ---
 
+<div align="center">
+
 ## Pseudo `UserShared` - For the Immich Partner  (Optional)
+
+</div>
+
+
 
 ⚠ For this to work you must also enable the Folder Restructure feature above.
 
@@ -312,7 +333,12 @@ Done. The Pseudo `SharedUser` feature is now enabled.
 
 ---
 
+<div align="center">
+
 ## Troubleshooting
+
+</div>
+
 
 | Symptom                                                  | Fix                                                                                                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -326,7 +352,12 @@ Done. The Pseudo `SharedUser` feature is now enabled.
 
 ---
 
+<div align="center">
+
 ## Unattended / Cron usage
+
+</div>
+
 
 You can schedule Immich Relocator via cron, but be aware:
 
@@ -342,7 +373,12 @@ Example cron (runs daily at 03:00):
 
 ---
 
+<div align="center">
+
 ## Restoring from a Database Backup
+
+</div>
+
 
 If something goes wrong:
 ```bash

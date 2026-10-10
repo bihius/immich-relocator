@@ -33,7 +33,9 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
+<div align="center">
 ## The technical stuff
+</div>
 
 ### What does Immich Relocator actually do?
 

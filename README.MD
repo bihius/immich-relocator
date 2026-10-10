@@ -1,4 +1,8 @@
+<div align="center">
+
 # Immich Relocator
+
+</div>
 
 Relocate all your picture & videos from the Immich internal folder to one or more external libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stack, faces, tags, etc.
 

@@ -1,21 +1,21 @@
 # Immich Relocator
 
 ## Overview
-This script moves files from the Immich `upload` directory to a defined external library folder and updates their corresponding entries in the PostgreSQL database.
+This script relocates files from the Immich `upload` directory to a defined external library folder and updates their corresponding entries in the PostgreSQL database.
 
 ## Features
-- Moves non-hidden files from the upload directory into a permanent external library
+- Relocates non-hidden files from the upload directory into a permanent external library
 - Updates PostgreSQL records to reflect the new file paths and marks assets as external library items
 - Sets `isExternal`, `deviceId`, and `libraryId` fields to prevent Immich from re-importing files
-- Prevents duplicate moves (`mv -n`)
+- Prevents duplicate relocations (`mv -n`)
 - Fully configurable via environment variables at the top of the script
 - Preserves original asset's file name
-- `--dry-run` mode shows exactly what would change before any move/UPDATE
+- `--dry-run` mode shows exactly what would change before any relocate/UPDATE
 - File-level locking prevents concurrent runs from corrupting state
 - NOT EXISTS guard against the `(ownerId, libraryId, checksum)` UNIQUE
   constraint — content-duplicates already in the external library are
   skipped cleanly instead of aborting and leaving a half-relocated state
-- Restores the moved file to source if the DB UPDATE skips it (no leaked files)
+- Restores the relocated file to source if the DB UPDATE skips it (no leaked files)
 - Per-file progress + final summary counters
 
 ## Requirements
@@ -55,7 +55,7 @@ chmod +x core.sh
 The script will:
 1. Find all non-hidden files under `SRC_DIR`
 2. For each file, look up the asset record by `originalPath`
-3. Move the file to `DEST_DIR/<originalFileName>` (preserving the asset's name)
+3. Relocate the file to `DEST_DIR/<originalFileName>` (preserving the asset's name)
 4. UPDATE the asset's `originalPath`, `isExternal`, `deviceId`, `libraryId` in one atomic CTE
 5. If the UPDATE is skipped by the NOT EXISTS guard (content duplicate), restore the file to `SRC_DIR` so the source is unchanged
 

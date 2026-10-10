@@ -17,6 +17,17 @@ Immich Relocator can be configured with optional advanced features that will all
 - Prevent accidental issues by optionally set up your Immich access to the external library as read only. Now edit via desktop DAM, and browse remotely via Immich clients.
 
 ---
+## Table of Content
+- [The technical stuff](#-the-technical-stuff)
+- [Prerequisites](#prerequisites)
+- [Install, Configure & First Run](#install-configure--first-run)
+- [Folder Restructure (Optional, but recommended)](#folder-restructure-optional-but-recommended)
+- [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
+- [Troubleshooting](#troubleshooting)
+- [Unattended / Cron usage](#unattended--cron-usage)
+- [Restoring from a Database Backup](#restoring-from-a-database-backup)
+
+---
 
 ## The technical stuff
 

@@ -1,9 +1,27 @@
 # Immich Relocator
 
-## Overview
-This script relocates files from the Immich `upload` directory to a defined external library folder and updates their corresponding entries in the PostgreSQL database.
+Relocate all your picture & videos from the Immich internal folder to one or more external libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stack, faces, tags, etc.
 
-## Features
+### Optional Advanced Features
+Immich Relocator can be configured with optional advanced features that will allow you to:
+- Trigger a Storage Template Migration job before relocating
+- Folder Restructure: reorganize the folder structure while relocating
+- Pseudo `UserShared`: 
+	- Differentiate the final destinations so that personal files are relocated to personal external library/ies and shared files to a shared external library
+	- Change ownership of files contained in shared albums to `UserShared` in bulk for partner sharing purpose
+- Use as many external libraries and users as you like
+
+### BENEFITS OF RELOCATING YOUR FILES TO AN EXTERAL LIBRARY
+- Condense your files in one place: external library only (instead of external plus Immich's internal `upload` folder). 
+- Post-process all your pictures and videos comfortably from a single place using the desktop DAM of your choice (e.g. digiKam, Lightroom, etc), pointing to external library
+- Prevent accidental issues by optionally set up your Immich access to the external library as read only. Now edit via desktop DAM, and browse remotely via Immich clients.
+
+---
+
+## The technical stuff
+
+### What does Immich Relocator actually do?
+
 - Relocates non-hidden files from the upload directory into one or more permanent external libraries.
 - Updates PostgreSQL records to reflect the new file paths and marks assets as external library items.
 - Updates the Immich database (`originalPath`, `libraryId`, `isExternal`, optionally `ownerId`) so Immich continues serving the files as if nothing changed.
@@ -20,56 +38,7 @@ This script relocates files from the Immich `upload` directory to a defined exte
 - Creates a timestamped Postgres backup before touching anything.
 - Supports any number of individual users and an optional shared library.
 
-## Requirements
-- Bash shell
-- `psql` (PostgreSQL client) — version 14+ recommended
-- Access to Immich's PostgreSQL database
-
-## Configuration
-
-All configuration is via environment variables (or by editing the defaults at the top of the script):
-
-```
-SRC_DIR=/opt/immich/upload/upload/   # default for Proxmox-helper-scripts installs
-DEST_DIR=/mnt/external_library/
-LIBRARY_NAME="External Library"      # name of your external library in Immich
-PGDATABASE=immich
-PGUSER=immich
-PGHOST=localhost
-PGPORT=5432
-PGPASSWORD=password
-LOCK_FILE=/tmp/immich-migrate-to-external-library.lock
-```
-
-For better security, use a `~/.pgpass` file instead of `PGPASSWORD`.
-
-## Usage
-
-```bash
-chmod +x core.sh
-
-./core.sh --dry-run --verbose   # preview what would happen
-./core.sh                       # apply changes
-./core.sh --verbose             # apply + log every file (not just summary)
-./core.sh --help                # show usage
-```
-
-The script will:
-1. Find all non-hidden files under `SRC_DIR`
-2. For each file, look up the asset record by `originalPath`
-3. Relocate the file to `DEST_DIR/<originalFileName>` (preserving the asset's name)
-4. UPDATE the asset's `originalPath`, `isExternal`, `deviceId`, `libraryId` in one atomic CTE
-5. If the UPDATE is skipped by the NOT EXISTS guard (content duplicate), restore the file to `SRC_DIR` so the source is unchanged
-
-## Important caveats
-
-- **Create your external library in Immich first** and set `LIBRARY_NAME` to match its name exactly.
-- **Duplicate filenames across different folders** in `SRC_DIR` will collide at `DEST_DIR/<originalFileName>`. The script's `[[ -e ... ]]` check + `mv -n` prevents overwrite — these files will be skipped (counter `SKIPPED_DEST_EXISTS`). Re-run after resolving manually.
-- **Don't rewrite `checksum` to sha1-path** (the format Immich's library scan creates). The mobile bulk-upload-check matches by content sha1 only — switching to sha1-path will trigger the iOS/Android client to re-upload its entire library. Keep `checksumAlgorithm = 'sha1'` (which this script does, by leaving the field unchanged).
-- Use version control / database backups before running on production data. `pg_dump immich` is your friend.
-- The script preserves the asset's `originalFileName` as the destination — if you want subdirectory organization (e.g., year/month folders), edit the `new_path` line in the script.
-
-## What the script does NOT do
+### What it does NOT do
 
 - It does **not** delete your original files, it relocates them. But if you want a copy, back them up first.
 - It does **not** re-encode, transcode, or modify media content.
@@ -77,3 +46,307 @@ The script will:
 - It does **not** deduplicate across different external libraries (same photo in shared + personal = two copies, by Immich design).
 - It does not relocate files in trashed assets (`deletedAt IS NOT NULL`).
 - It does not relocate already-external assets (`libraryId IS NOT NULL`).
+
+
+---
+
+## Prerequisites
+
+| #   | Requirement                                                                                                      | How to verify                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | Immich is fully up and running                                                                                   | `docker compose ps` in your Immich folder shows all containers green |
+| 2   | Bash 4+ and Docker on the host                                                                                   | `bash --version`, `docker --version`                                 |
+| 3   | PostgreSQL client (`psql`) — version 14+ recommended                                                             | `psql --version`                                                     |
+| 4   | At least one external library created in Immich (optionally one per individual user, and one shared possible     | Administration → Libraries → Add                                     |
+| 5   | The external library mount paths exist and are writable by the host user running the script                      | `ls -la /mnt/your/ext/library/path`                                  |
+| 6   | A symlink from the Immich container's upload path to the host mount                                              | `ls -l /path/to/symlink` (should point to the host mount)            |
+| 7   | Optional: Storage Labels set for each individual user (optional, but recommended)                                | Administration → Users → Edit → "Storage Label"                      |
+| 8   | Optional: An Immich API key with `job.create` and `queue.read` permissions (for Storage Template Migration only) | Create in: Administration → API Keys                                 |
+
+---
+
+## Install, Configure & First Run
+
+### How to Install
+ℹ In these examples we will use Debian specific commands, please adjust according to your OS.
+
+Install `postgresql-client` if you haven't already:
+```bash
+apt update && apt install -y postgresql-client
+```
+Clone the Immich Relocator repository:
+```bash
+git clone https://github.com/bihius/immich-relocator.git
+cd immich-relocator
+```
+Make scripts executable:
+```bash
+chmod +x relocator.sh core.sh psql
+```
+Create a symlink that points to your docker location:
+```bash
+sudo ln -s $UPLOAD_MOUNT $SYMLINK_PATH
+```
+*NOTE: if you are unsure how to do this, run `./relocator --dry-run` for the first time and it'll tell you exactly what symlink you need to create. This is the only time you will need  to use `sudo`.*
+### Configure the script via `.env` file
+
+Create your `.env` file:
+```bash
+cd ~/immich-relocator
+cp .env.example .env
+nano .env
+```
+
+Fill in at least every not optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional advanced feature.
+  
+### Usage: flags and full run modes
+
+The script runs with a simple `./relocator.sh` command, but you have the option to use some optional flags:
+
+| Flag               | Description                                                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--help`           | Print help text.                                                                                                                                                  |
+| `--dry-run`        | Count only. Prints total files that would relocate if running the script again using no flags. Immich server is never stopped. Zero changes to files or database. |
+| `--dry-run --full` | Runs Storage Template Migration job (if API key set), then prints detailed per-file report. No files are relocated, server is never stopped.                      |
+| *No flag*          | Full relocation: Storage Template Migration job (if API key set) → stop server → backup db → relocate → restart server                                            |
+| `--limit N`        | Relocate files, but process only the first N files (useful for very large libraries). Re-run to continue where it left off.                                       |
+| `--verbose`        | Relocate files and log every single file processed (not just the summary).                                                                                        |
+|                    |                                                                                                                                                                   |
+
+####  The `--dry-run` and `--dry-run --full` flags. Start with these!
+```bash
+./relocator.sh --dry-run
+```
+This prints a single number: how many files would be relocated. Zero changes to files or database.
+In most cases this should be enough to have an idea of how many files would relocate, but run it again paired with the `--full` flag to have an even clearer and more detailed picture:
+```bash
+./relocator.sh --dry-run --full
+```
+The `--full` flag will make sure that a Storage Template Migration job runs before to count how many files would relocate (but only if you set an API key). Then a detailed per-file report will be printed. Your files will still **not** be relocated at this stage.
+  
+#### Relocate
+If everything looks good to you run the relocator:
+```bash
+./relocator.sh
+```
+
+#### The `--limit` flag
+But wait... to be extra safe. Limit the amount of files that will relocate during your first relocation:
+```
+./relocator.sh --limit 1000
+```
+The command above limits the script to relocate only up to 1000 files (pictures or videos). This is useful to relocate a large library in batches, and also to test a small sample when you are configuring the `.env` file for the first time (e.g. `./relocator.sh --limit 2` will only relocate 2 files).
+
+
+---
+
+## Folder Restructure (Optional, but recommended)
+
+Immich Relocator can reorganise the way your final folder structure will look like, just before to relocate the files to the external library.
+
+This is only possible using a combination of:
+- Storage Template Migration: so that the files are arranged in a predictable structure
+- Storage Label: so that a recognisable user name is used per each user
+- Regex: this is a hardcoded value present in the script, so it cannot be altered by the user
+
+Unless modifying the `.core.sh` script, if you decide to use the Folder Restructure feature, your files will assume the following folder structure once they have reached their final destination:
+
+```
+External Library
+|_ 2023-02 - Japan
+|__ John
+|___ Sony a7-IV
+|____ 20230201-081423.jpg
+|___ Motorola Razr70Ultra
+|____ 20230206-102423.jpg
+|_ 2024-05 - New York
+|__ John
+|___ Sony a7-IV
+|____ 20240501-081423.jpg
+|___ Motorola Razr70Ultra
+|____ 20240506-102423.jpg
+```
+
+#### How to Enable the Folder Restructure feature
+
+If you like the folder structure above, and you want to use this feature, you can do so with these simple steps:
+
+1 - Add the following template to your Immich GUI: Administration -> Settings -> Storage Template -> Template:
+```
+{{y}}/{{album-startDate-y}}-{{album-startDate-MM}} - {{{album}}}/{{make}} {{model}}/{{filename}}
+```
+
+2 - Create an API key:  Account Settings -> API Keys -> New API Key. And add the following permissions:
+```
+job.create
+queue.read
+```
+
+3 - Add a Storage Label for every user that matches their user name: Administration → Users → Edit → "Storage Label".
+
+4 - Fill the `IMMICH_API_KEY` and `USER_1_LABEL` fields with the actual API key and the Storage Label values in the `.env` file.
+  
+Done. Your Folder Restructure feature is now enabled. The most non-destructive way to test it all out for the first time, is to use `./relocator.sh --dry-run --full`, which should now run the Storage Template Migration job before to tell you how many files would relocate. If everything looks good to you, go ahead and run `./relocator.sh` with or without the `--limit N` flag.
+
+
+---
+
+## Pseudo `UserShared` - The Immich Partner Fix  (Optional)
+
+⚠ For this to work you must also enable the Folder Restructure feature above.
+
+### Why this feature exists
+
+Currently the Immich experience of users sharing media with their partner is somewhat limiting:
+- A user can use "Partner Sharing", but that way **all** their pictures and videos are shared.
+- Otherwise, a user can share just albums, but then the items contained in that albums are not shown in the partner's timeline.
+
+So most people revert to using a third pseudo entity, which we will name `UserShared`. 
+`UserShared` has "Partner Sharing" enabled with both partners, finally allowing the two actual users to see shared items in both albums **and** timeline view. 
+**But there is a catch**: now both users need a second client on their devices to upload the picture/videos on the `UserShared` profile. And, also, there is a need to access that third account every time a tweak to an album/item is required. Still not as smooth as it could be.
+  
+Immich Relocator helps users to almost never having to interact with the `UserShared` profile, by relocating pictures from partner's individual account to the `UserShared` automatically. The script also changes the ownership of those files accordingly, so that it looks like they always belonged to `UserShared` to begin with. While, both partners can enjoy their more personal item/albums without needing to share everything with each other (no more all or nothing). And that is all without the need of a second Immich client on their devices.
+
+### Use-case Example:
+```
+# IMMICH USERS: 
+User1: Joe
+User2: Andrea
+User3: UserShared
+EXT_LIBRARIES: /mnt/external-library-joe, /mnt/external-library-andrea, /mnt/external-library-usershared
+```
+
+Joe and Andrea go to visit Japan. Joe creates a new "Japan" album which shares with Andrea via Joe's own Immich profile. Andrea contributes by adding photos to the same album.
+After the trip is over, the album "Japan" contains 200 pictures uploaded (owned) by Joe, and 250 owned by Andrea. Joe and Andrea cannot see each other Japan's photos in their timeline, only in album view.
+After making sure the pics have been uploaded to the Immich server (and backed up), they delete the pictures from their own devices to free up some space.
+Now one of them runs the `./relocator.sh` with the Pseudo `UserShared` feature enabled, and in a few seconds:
+- 450 pics are moved to an external library owned by `UserShared`
+- The same 450 pics are now owned by `UserShared` not by Joe or Andrea anymore
+- If `UserShared` has Partner Sharing enabled with Joe and Andrea they will both see the 450 pics in their timeline
+- The album "Japan" is still owned by Joe, it is still shared with Andrea and it still contains all the 450 pictures inside that both users can see in album view
+
+But it does not stop here. Joe and Andrea can still have their own private pictures in an entirely separate external library. These are the pictures that they decided not to share. Which will relocate, elsewhere, and will **not** change ownership.
+
+Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a sub folder named after their user name (Storage Label).
+
+### FOLDER STRUCTURE RESULT AFTER RELOCATION:
+```
+UserShared's External Library
+|_ 2023-02 - Japan
+|__ Joe
+|___ Sony a7-IV
+|____ 20230201-081423.jpg
+|___ Motorola Razr70Ultra
+|____ 20230206-102423.jpg
+|__ Andrea
+|___ Canon R6
+|____ 20230201-112823.jpg
+|___ iPhone 17
+|____ 20230206-122423.jpg
+
+Joe's Individual External Library
+|_ 2024-08 - Fishing
+|__ Joe
+|___ Sony a7-IV
+|____ 20240801-081423.jpg
+|___ Motorola Razr70Ultra
+|____ 20240806-102423.jpg
+
+Andrea's Individual External Library
+|_ 2025-011 - Trip w Mum
+|__ Andrea
+|___ Canon R6
+|____ 20251101-112823.jpg
+|___ iPhone 17
+|____ 20251106-122423.jpg
+```
+
+
+### Logic:
+Is the pic/video included in an album that is shared?
+- IF **YES** (album is shared):
+	- Relocate picture/video to `/mnt/external-library-usershared`
+		- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Shared)
+		- Update database
+	- IF **NO** (album is unshared):
+		- Relocate picture/video to User1/User2's Individual External Libraries respectively
+		- **Do not** change ownership
+		- Update database
+
+
+### How to Enable the Pseudo `UserShared` feature
+
+1 - Make sure a pseudo user exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add Storage Label for this particular user and it is not considered in the `INDIVIDUAL_USERS_COUNT`. 
+Take note of the `UserShared` UUID number in Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED` replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
+  
+2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to: `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
+  
+3 - Add the actual path to `/mnt/external-library-usershared` to `DEST_SHARED` in the `.env` file.
+  
+Done. The Pseudo `SharedUser` feature is now enabled.
+
+#### ⚠ IMPORTANT:
+- The script only checks is the pic/video is contained in an album, and if that album is shared. If **yes**, then it relocates it to the shared external library, if **not** it relocates it to personal. It does not check if it is shared with Andrea or joe. So, if you share albums with multiple users, this feature will not fit you.
+- If items do not belong to, at least, one album, then the whole logic becomes way more fragile and predictable. Find if items are not in any albums via Immich GUI: Search Option -> Display options -> "Not in any album" to visualise any media that it is not in any album and add items to a shared or unshared album.
+- If you use this feature then make sure to delete any picture/video from your devices before to run the `relocator.sh` script. Immich's deduplication only works for files owned by the same user. But since ownership is changed, if you don't delete the files from partners' devices first you'll end up with as many duplicates as the shared files are.
+
+
+---
+
+## Troubleshooting
+
+| Symptom                                                  | Fix                                                                                                                                                                  |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ERROR: another instance is running (PID …)`             | A previous run is still active. Wait, or force-remove: `rm ~/immich-relocator/.lock`                                                                                 |
+| `ERROR: immich-server is not running`                    | Your Immich stack crashed or was stopped. Start it: `cd $COMPOSE_DIR && docker compose up -d`                                                                        |
+| `ERROR: Failed to query database`                        | Check `PGHOST`, `PGUSER`, `PGPASSWORD` in `.env`. Verify the Postgres container is up: `docker ps \| grep immich_postgres`                                           |
+| `ERROR: Library 'X' not found`                           | The library name in `.env` doesn't match the one in the Immich GUI exactly (case-sensitive).                                                                         |
+| `WARN: RENAME_SED does not match current storage labels` | Your `USER_N_LABEL` values don't match what's in the file paths. Check that the storage labels in the GUI match your `.env`.                                         |
+| `Skipped (no label match): N`                            | Some files don't have a recognised storage label in their path. Check the verbose log to see which ones.                                                             |
+| Backup file appears "truncated"                          | The backup is likely fine — the integrity check searches for the `PostgreSQL database dump complete` marker. If it's missing, the `pg_dump` was interrupted. Re-run. |
+
+---
+
+## Unattended / Cron usage
+
+You can schedule Immich Relocator via cron, but be aware:
+
+- If using the Pseudo `UserShared` feature, you should ensure that users have deleted the media from their own devices before the cron fires (see the "IMPORTANT" paragraph in the Pseudo `UserShared` section).
+- The lock file prevents overlapping runs. If a previous run is still going, the new one exits immediately.
+- Also remember that the Storage Template Migration job (if enabled) can take a long time for very large libraries. If you keep using Immich Relocator regularly, this process will become much faster, but it still depends on how many picture/videos you usually upload to the server.
+
+Example cron (runs daily at 03:00):
+```
+0 3 * * * /home/youruser/immich-relocator/relocator.sh >> /home/youruser/immich-relocator/cron.log 2>&1
+```
+
+
+---
+
+## Restoring from a Database Backup
+
+If something goes wrong:
+```bash
+# Stop Immich
+cd $COMPOSE_DIR && docker compose stop immich-server
+
+```
+
+Double-check where the files are. 
+In case of issues, the script should automatically relocate the files back to their original location (Immich internal "upload" folder), but if for whatever reason this did not happen, relocate the files manually back to their source.
+
+Then:
+```bash
+# Restore
+docker exec -i immich_postgres psql -U postgres immich < ~/immich-relocator/db-backups/immich_backup_YYYYMMDD_HHMM.sql
+
+# Start Immich
+docker compose up -d immich-server
+```
+
+
+## A.I. Disclosure & Disclaimer
+
+Although a lot of manual hard work happened for this project, a large part of the Immich Relocator code was implemented by various AI models. Having said that, multiple developers, with actual blood in their veins, have envisioned the logic and tested the outcomes the best they could on their testing environments. 
+Every words contained in this readme file (apart from the prerequisites and troubleshooting tables) were written by a human hand, to ensure the usage is clear and with detailed examples.
+Please use Immich Relocator cautiously, especially during your first runs, and even more so after any Immich update.

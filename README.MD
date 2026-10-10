@@ -21,6 +21,9 @@ Immich Relocator can be configured with optional advanced features that will all
 - Prevent accidental issues by optionally set up your Immich access to the external library as read only. Now edit via desktop DAM, and browse remotely via Immich clients.
 
 ---
+
+<div align="center">
+
 ## Table of Content
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
@@ -30,6 +33,9 @@ Immich Relocator can be configured with optional advanced features that will all
 - [Troubleshooting](#troubleshooting)
 - [Unattended / Cron usage](#unattended--cron-usage)
 - [Restoring from a Database Backup](#restoring-from-a-database-backup)
+
+</div>
+
 
 ---
 

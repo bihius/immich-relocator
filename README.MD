@@ -6,7 +6,7 @@ Relocate all your picture & videos from the Immich internal folder to one or mor
 Immich Relocator can be configured with optional advanced features that will allow you to:
 - Trigger a Storage Template Migration job before relocating
 - Folder Restructure: reorganize the folder structure while relocating
-- Pseudo `UserShared`: 
+- [Pseudo `UserShared`](https://github.com/Rand0mB0y/immich-relocator#pseudo-usershared---for-the-immich-partner--optional): 
 	- Differentiate the final destinations so that personal files are relocated to personal external library/ies and shared files to a shared external library
 	- Change ownership of files contained in shared albums to `UserShared` in bulk for partner sharing purpose
 - Use as many external libraries and users as you like

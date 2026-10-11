@@ -100,26 +100,16 @@ Immich Relocator can be configured with optional advanced features that will all
 ### How to Install
 ℹ In these examples we will use Debian specific commands, please adjust according to your OS.
 
-Install `postgresql-client` if you haven't already:
-```bash
-apt update && apt install -y postgresql-client
-```
 Clone the Immich Relocator repository:
 ```bash
 git clone https://github.com/bihius/immich-relocator.git
-cd immich-relocator
 ```
 Make scripts executable:
 ```bash
+cd immich-relocator
 chmod +x relocator.sh core.sh psql
 ```
-Create a symlink that points to your docker location:
-```bash
-sudo ln -s $UPLOAD_MOUNT $SYMLINK_PATH
-```
-*NOTE: if you are unsure how to do this, run `./relocator --dry-run` for the first time and it'll tell you exactly what symlink you need to create. This is the only time you will need  to use `sudo`.*
 ### Configure the script via `.env` file
-
 Create your `.env` file:
 ```bash
 cd ~/immich-relocator
@@ -127,7 +117,20 @@ cp .env.example .env
 nano .env
 ```
 
-Fill in at least every not optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional advanced feature.
+Fill in every non-optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional advanced feature.
+
+### Create a symlink that points to your docker location
+The easiest way to do this, is to run the script for the first time using the `--dry-run` flag and follow the help info about how to create the symlink:
+```bash
+./relocator.sh --dry-run
+# → if it errors with "Symlink ... not found. Create it: sudo ln -s ..."
+#   Run that suggested cmd exactly as shown, then re-run --dry-run to confirm it now works
+```
+The command you will need to run will look something like:
+```bash
+sudo ln -s /mnt/path/to/your/immich/folder /immich/internal/path/
+```
+This is needed for the first time only, and it is the only time you will need to use `sudo`.
   
 ### Usage: flags and full run modes
 

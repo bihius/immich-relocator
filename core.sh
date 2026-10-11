@@ -107,7 +107,7 @@ while true; do
   fi
   lock_pid=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
   if [[ -z "$lock_pid" ]] || ! kill -0 "$lock_pid" 2>/dev/null; then
-    rm -f "$lock_pid"
+    rm -f "$LOCK_FILE"
     continue
   fi
   echo "ERROR: another instance is running (PID $lock_pid)" >&2

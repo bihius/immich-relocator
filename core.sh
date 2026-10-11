@@ -64,6 +64,12 @@ for i in $(seq 1 "$INDIVIDUAL_USERS_COUNT"); do
   USERS_LIB_NAMES+=("${!var}")
 done
 
+# Normalize destination paths (ensure trailing slash) ----------------------
+for i in "${!USERS_DESTS[@]}"; do
+  USERS_DESTS[$i]="${USERS_DESTS[$i]%/}/"
+done
+DEST_SHARED="${DEST_SHARED%/}/"
+
 # --- Auto-generate RENAME_SED from user labels -----------------------------
 RENAME_SED=""
 for label in "${USERS_LABELS[@]}"; do

@@ -90,6 +90,7 @@ fi
 # --- Shut down immich-server container  -----------------------------------------
 cd "$COMPOSE_DIR"
 docker compose stop immich-server
+trap 'echo "[relocator] Restarting immich-server after failure/exit..." >&2; cd "$COMPOSE_DIR" && docker compose up -d immich-server 2>/dev/null || true' EXIT
 
 # --- Create db backup -----------------------------------------------------------
 mkdir -p "$CORE_SCRIPT_DIR/db-backups"
@@ -115,7 +116,3 @@ cd "$CORE_SCRIPT_DIR"
 
 # --- Delete empty directories located in Immich's internal library folder  ------
 find "$UPLOAD_MOUNT/library" -type d -empty -delete 2>/dev/null || true
-
-# --- Restart immich-server container  -------------------------------------------
-cd "$COMPOSE_DIR"
-docker compose up -d immich-server

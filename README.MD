@@ -211,7 +211,7 @@ If you like the folder structure above, and you want to use this feature, you ca
 
 1 - Add the following template to your Immich GUI: Administration -> Settings -> Storage Template -> Template:
 ```
-{{y}}/{{album-startDate-y}}-{{album-startDate-MM}} - {{{album}}}/{{make}} {{model}}/{{filename}}
+{{y}}/{{album-startDate-y}}-{{album-startDate-MM}} - {{{album}}}/{{make}}_{{model}}/{{filename}}
 ```
 
 2 - Create an API key:  Account Settings -> API Keys -> New API Key. And add the following permissions:

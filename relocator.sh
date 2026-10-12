@@ -45,9 +45,7 @@ if [[ "$IS_DRY_RUN" == true && "$IS_FULL" != true ]]; then
   cd "$CORE_SCRIPT_DIR"
   ./core.sh --dry-run
   echo ""
-  echo "NOTE: If you use Storage Labels, please run the script with the --dry-run --full flag."
-  echo "Using --full will ensure a more precise and detailed result. Mind that running the script with --dry-run --full"
-  echo "may also execute a Storage Template Migration job, if you configured your .env file to allow it."
+  echo "NOTE: Use the --dry-run --full flag for more detailed results. Mind that using --full may also execute a Storage Template Migration job, if you configured your .env file to allow it."
   echo "A Storage Template Migration job may take time, depending on the amount of media you have."
   echo "Even when using --dry-run --full, your actual files will still not be relocated to the external libraries."
   exit 0
@@ -63,7 +61,6 @@ if ! docker compose ps immich-server --status running --quiet 2>/dev/null | grep
 fi
 
 # --- DRY-RUN --full -------------------------------------------------------------
-
 if [[ "$IS_DRY_RUN" == true && "$IS_FULL" == true ]]; then
   if [[ -n "$IMMICH_API_KEY" ]]; then
     run_storage_template_job
@@ -91,6 +88,7 @@ fi
 cd "$COMPOSE_DIR"
 docker compose stop immich-server
 trap 'echo "[relocator] Restarting immich-server after failure/exit..." >&2; cd "$COMPOSE_DIR" && docker compose up -d immich-server 2>/dev/null || true' EXIT
+
 
 # --- Create db backup -----------------------------------------------------------
 mkdir -p "$CORE_SCRIPT_DIR/db-backups"

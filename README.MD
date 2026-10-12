@@ -8,7 +8,7 @@ Relocate all your pictures & videos from the Immich internal folder to one or mo
 
 ### Optional Advanced Features
 Immich Relocator can be configured with optional advanced features that will allow you to:
-- Trigger a Storage Template Migration job before relocating
+- Trigger a [Storage Template Migration job](#storage-template-migration-optional) before relocating
 - [Folder Restructure](#folder-restructure-optional-but-recommended): reorganize the folder structure while relocating
 - [Pseudo UserShared](#pseudo-usershared---for-the-immich-partner--optional): 
 	- Differentiate the final destinations so that personal files are relocated to personal external library/ies and shared files to a shared external library
@@ -26,6 +26,7 @@ Immich Relocator can be configured with optional advanced features that will all
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
 - [Install, Configure & First Run](#install-configure--first-run)
+- [Storage Template Migration job (Optional)](#storage-template-migration-optional)
 - [Folder Restructure (Optional)](#folder-restructure-optional)
 - [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
 - [Troubleshooting](#troubleshooting)
@@ -173,6 +174,35 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 
 ---
 
+
+<div align="center">
+
+## Storage Template Migration job (Optional)
+
+</div>
+
+
+Immich Relocator can run a Storage Template Migration job right before to relocate your files, so that the folder structure assumes its neatest form when it reaches the final destination.
+
+You can use any Storage Template you like, and you can enable this feature in a few easy steps:
+
+1 - Create an API key via Immich GUI: Account Settings -> API Keys -> New API Key. And add the following permissions:
+```
+job.create
+queue.read
+```
+
+2 - Paste the key in the `IMMICH_API_KEY` variable within the `.env` file: 
+```bash
+IMMICH_API_KEY="add-your-api-key-here"
+```
+
+Done.
+
+
+---
+
+
 <div align="center">
 
 ## Folder Restructure (Optional)
@@ -180,11 +210,16 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 </div>
 
 
+```
+⚠ IMPORTANT: This feature depends on:
+- Multi External Libraries is enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
+- Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
+```
+
 Immich Relocator can reorganise the way your final folder structure will look like, just before to relocate the files to the external library.
 
 This is only possible using a combination of:
-- Storage Template Migration: so that the files are arranged in a predictable structure
-- Storage Label: so that a recognisable user name is used per each user
+- Storage Template Migration: so that the files are arranged in a predictable structure before relocation
 - Regex: this is a hardcoded value present in the script, so it cannot be altered by the user
 
 Unless modifying the `.core.sh` script, if you decide to use the Folder Restructure feature, your files will assume the following folder structure once they have reached their final destination:
@@ -192,13 +227,13 @@ Unless modifying the `.core.sh` script, if you decide to use the Folder Restruct
 ```
 External Library
 |_ 2023-02 - Japan
-|__ John
+|__ Joe
 |___ Sony a7-IV
 |____ 20230201-081423.jpg
 |___ Motorola Razr70Ultra
 |____ 20230206-102423.jpg
 |_ 2024-05 - New York
-|__ John
+|__ Joe
 |___ Sony a7-IV
 |____ 20240501-081423.jpg
 |___ Motorola Razr70Ultra
@@ -214,17 +249,14 @@ If you like the folder structure above, and you want to use this feature, you ca
 {{y}}/{{album-startDate-y}}-{{album-startDate-MM}} - {{{album}}}/{{make}}_{{model}}/{{filename}}
 ```
 
-2 - Create an API key:  Account Settings -> API Keys -> New API Key. And add the following permissions:
-```
-job.create
-queue.read
-```
+2 - Enable the [Storage Template Migration job](#storage-template-migration-optional) feature
 
-3 - Add a Storage Label or UUID for every user that matches their user name: Administration → Users → Edit → "Storage Label" or 
+3 - Fill in every `USER_N_LABEL` in the `.env` file using one of the following options:
+- Storage Label (Administration → Users → Edit → "Storage Label"), or
+- UUID (Administration -> Users -> Profile -> ID)
+- Use `admin` for the first created admin user that does not use Storage Label
 
-4 - Fill the `IMMICH_API_KEY` and `USER_1_LABEL` fields with the actual API key and the Storage Label values in the `.env` file.
-
-5 - Set the Folder Restructure variable to `true`:
+4 - Set the Folder Restructure variable to `true`:
 ```bash
 FOLDER_RESTRUCTURE=true
 ```
@@ -240,6 +272,14 @@ Done. Your Folder Restructure feature is now enabled. The most non-destructive w
 
 </div>
 
+
+```
+⚠ IMPORTANT: This feature depends on:
+- Multi External Libraries is enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
+- Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
+- Every pic/video of the Immich library has been added to at least one album
+- For a neater result, enabling the Folder Restructure feature is also suggested
+```
 
 ### Why this feature exists
 
@@ -328,6 +368,8 @@ Take note of the `UserShared` UUID number in Immich GUI: Administration -> Users
 2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to: `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
   
 3 - Add the actual path to `/mnt/external-library-usershared` to `DEST_SHARED` in the `.env` file.
+
+4 - Enable the [Storage Template Migration job](#storage-template-migration-optional) feature
   
 Done. The Pseudo `SharedUser` feature is now enabled.
 

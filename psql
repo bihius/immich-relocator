@@ -1,2 +1,3 @@
 #!/bin/bash
 docker exec -i -e PGUSER="$PGUSER" -e PGPASSWORD="$PGPASSWORD" -e PGDATABASE="$PGDATABASE" immich_postgres psql "$@"
+

@@ -42,7 +42,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ### What does Immich Relocator actually do?
 
-- Relocates non-hidden files from the upload directory into one or more permanent external libraries.
+- Relocates non-hidden files from the upload or library directories into one or more permanent external libraries.
 - Updates PostgreSQL records to reflect the new file paths and marks assets as external library items.
 - Updates the Immich database (`originalPath`, `libraryId`, `isExternal`, optionally `ownerId`) so Immich continues serving the files as if nothing changed.
 - Preserves the original SHA-1 content checksum, so clients' bulk-upload-check still matches and no re-upload is triggered.
@@ -51,8 +51,9 @@ Immich Relocator can be configured with optional advanced features that will all
 - `--dry-run`  and `--dry-run --full` modes shows exactly what would relocate before any relocation/UPDATE happens.
 - File-level locking prevents concurrent runs from corrupting state.
 - `NOT EXISTS` guard against the `(ownerId, libraryId, checksum)` UNIQUE constraint, so that content-duplicates already in the external library are skipped cleanly instead of aborting and leaving a half-relocated state.
-- Restores the moved file to source if the DB UPDATE skips it (no leaked files)
+- Restores the moved file to source if the DB UPDATE skips it (no leaked files).
 - Per-file progress + final summary counters.
+- Optionally runs a Storage Template Migration job before relocation
 - Optionally restructures the folder layout (e.g. from `library/John/2026/Album/` to `Album/John/`).
 - Removes empty folders from the `/immich/library` folder after relocations.
 - Creates a timestamped Postgres backup before touching anything.
@@ -219,9 +220,14 @@ job.create
 queue.read
 ```
 
-3 - Add a Storage Label for every user that matches their user name: Administration → Users → Edit → "Storage Label".
+3 - Add a Storage Label or UUID for every user that matches their user name: Administration → Users → Edit → "Storage Label" or 
 
 4 - Fill the `IMMICH_API_KEY` and `USER_1_LABEL` fields with the actual API key and the Storage Label values in the `.env` file.
+
+5 - Set the Folder Restructure variable to `true`:
+```bash
+FOLDER_RESTRUCTURE=true
+```
   
 Done. Your Folder Restructure feature is now enabled. The most non-destructive way to test it all out for the first time, is to use `./relocator.sh --dry-run --full`, which should now run the Storage Template Migration job before to tell you how many files would relocate. If everything looks good to you, go ahead and run `./relocator.sh` with or without the `--limit N` flag.
 

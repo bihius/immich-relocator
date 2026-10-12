@@ -8,7 +8,7 @@ Relocate all your pictures & videos from the Immich internal folder to one or mo
 
 ### Optional Advanced Features
 Immich Relocator can be configured with optional advanced features that will allow you to:
-- Trigger a [Storage Template Migration job](#storage-template-migration-optional) before relocating
+- Trigger a [Storage Template Migration job](#storage-template-migration-job-optional) before relocating
 - [Folder Restructure](#folder-restructure-optional-but-recommended): reorganize the folder structure while relocating
 - [Pseudo UserShared](#pseudo-usershared---for-the-immich-partner--optional): 
 	- Differentiate the final destinations so that personal files are relocated to personal external library/ies and shared files to a shared external library
@@ -26,7 +26,7 @@ Immich Relocator can be configured with optional advanced features that will all
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
 - [Install, Configure & First Run](#install-configure--first-run)
-- [Storage Template Migration job (Optional)](#storage-template-migration-optional)
+- [Storage Template Migration job (Optional)](#storage-template-migration-job-optional)
 - [Folder Restructure (Optional)](#folder-restructure-optional)
 - [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
 - [Troubleshooting](#troubleshooting)
@@ -249,7 +249,7 @@ If you like the folder structure above, and you want to use this feature, you ca
 {{y}}/{{album-startDate-y}}-{{album-startDate-MM}} - {{{album}}}/{{make}}_{{model}}/{{filename}}
 ```
 
-2 - Enable the [Storage Template Migration job](#storage-template-migration-optional) feature
+2 - Enable the [Storage Template Migration job](#storage-template-migration-job-optional) feature
 
 3 - Fill in every `USER_N_LABEL` in the `.env` file using one of the following options:
 - Storage Label (Administration → Users → Edit → "Storage Label"), or
@@ -369,7 +369,7 @@ Take note of the `UserShared` UUID number in Immich GUI: Administration -> Users
   
 3 - Add the actual path to `/mnt/external-library-usershared` to `DEST_SHARED` in the `.env` file.
 
-4 - Enable the [Storage Template Migration job](#storage-template-migration-optional) feature
+4 - Enable the [Storage Template Migration job](#storage-template-migration-job-optional) feature
   
 Done. The Pseudo `SharedUser` feature is now enabled.
 

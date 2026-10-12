@@ -113,4 +113,4 @@ cd "$CORE_SCRIPT_DIR"
 ./core.sh "$@"
 
 # --- Delete empty directories located in Immich's internal library folder  ------
-find "$UPLOAD_MOUNT/library" -type d -empty -delete 2>/dev/null || true
+find "$UPLOAD_MOUNT/library" -mindepth 1 -type d -empty -delete 2>/dev/null || true

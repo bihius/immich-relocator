@@ -26,7 +26,7 @@ Immich Relocator can be configured with optional advanced features that will all
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
 - [Install, Configure & First Run](#install-configure--first-run)
-- [Folder Restructure (Optional, but recommended)](#folder-restructure-optional-but-recommended)
+- [Folder Restructure (Optional)](#folder-restructure-optional)
 - [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
 - [Troubleshooting](#troubleshooting)
 - [Unattended / Cron usage](#unattended--cron-usage)
@@ -56,7 +56,7 @@ Immich Relocator can be configured with optional advanced features that will all
 - Optionally restructures the folder layout (e.g. from `library/John/2026/Album/` to `Album/John/`).
 - Removes empty folders from the `/immich/library` folder after relocations.
 - Creates a timestamped Postgres backup before touching anything.
-- Supports any number of individual users and an optional shared library.
+- Supports any number of External Libraries and an optional shared External Library.
 
 ### What it does NOT do
 
@@ -81,12 +81,11 @@ Immich Relocator can be configured with optional advanced features that will all
 | --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | 1   | Immich is fully up and running                                                                                   | `docker compose ps` in your Immich folder shows all containers green |
 | 2   | Bash 4+ and Docker on the host                                                                                   | `bash --version`, `docker --version`                                 |
-| 3   | PostgreSQL client (`psql`) — version 14+ recommended                                                             | `psql --version`                                                     |
-| 4   | At least one external library created in Immich (optionally one per individual user, and one shared possible     | Administration → Libraries → Add                                     |
-| 5   | The external library mount paths exist and are writable by the host user running the script                      | `ls -la /mnt/your/ext/library/path`                                  |
-| 6   | A symlink from the Immich container's upload path to the host mount                                              | `ls -l /path/to/symlink` (should point to the host mount)            |
-| 7   | Optional: Storage Labels set for each individual user (optional, but recommended)                                | Administration → Users → Edit → "Storage Label"                      |
-| 8   | Optional: An Immich API key with `job.create` and `queue.read` permissions (for Storage Template Migration only) | Create in: Administration → API Keys                                 |
+| 3   | At least one external library created in Immich (optionally one per user, and one shared possible     | Administration → Libraries → Add                                     |
+| 4   | The external library mount paths exist and are writable by the host user running the script                      | `ls -la /mnt/your/ext/library/path`                                  |
+| 5   | A symlink from the Immich container's upload path to the host mount                                              | `ls -l /path/to/symlink` (should point to the host mount)            |
+| 6   | Optional: Storage Labels set for each user (optional, but recommended)                                | Administration → Users → Edit → "Storage Label"                      |
+| 7   | Optional: An Immich API key with `job.create` and `queue.read` permissions (for Storage Template Migration only) | Create in: Administration → API Keys                                 |
 
 ---
 
@@ -175,7 +174,7 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 
 <div align="center">
 
-## Folder Restructure (Optional, but recommended)
+## Folder Restructure (Optional)
 
 </div>
 
@@ -236,9 +235,6 @@ Done. Your Folder Restructure feature is now enabled. The most non-destructive w
 </div>
 
 
-
-⚠ For this to work you must also enable the Folder Restructure feature above.
-
 ### Why this feature exists
 
 Currently the Immich experience of users sharing media with their partner is somewhat limiting:
@@ -249,7 +245,7 @@ So most people revert to using a third pseudo entity, which we will name `UserSh
 `UserShared` has "Partner Sharing" enabled with both partners, finally allowing the two actual users to see shared items in both albums **and** timeline view. 
 **But there is a catch**: now both users need a second client on their devices to upload the picture/videos on the `UserShared` profile. And, also, there is a need to access that third account every time a tweak to an album/item is required. Still not as smooth as it could be.
   
-Immich Relocator helps users to almost never having to interact with the `UserShared` profile, by relocating pictures from partner's individual account to the `UserShared` automatically. The script also changes the ownership of those files accordingly, so that it looks like they always belonged to `UserShared` to begin with. While, both partners can enjoy their more personal item/albums without needing to share everything with each other (no more all or nothing). And that is all without the need of a second Immich client on their devices.
+Immich Relocator helps users to almost never having to interact with the `UserShared` profile, by relocating pictures from partners' personal accounts to the `UserShared` automatically. The script also changes the ownership of those files accordingly, so that it looks like they always belonged to `UserShared` to begin with. While, both partners can enjoy their more personal item/albums without needing to share everything with each other (no more all or nothing). And that is all without the need of a second Immich client on their devices.
 
 ### Use-case Example:
 ```
@@ -288,7 +284,7 @@ UserShared's External Library
 |___ iPhone 17
 |____ 20230206-122423.jpg
 
-Joe's Individual External Library
+Joe's External Library
 |_ 2024-08 - Fishing
 |__ Joe
 |___ Sony a7-IV
@@ -296,7 +292,7 @@ Joe's Individual External Library
 |___ Motorola Razr70Ultra
 |____ 20240806-102423.jpg
 
-Andrea's Individual External Library
+Andrea's External Library
 |_ 2025-011 - Trip w Mum
 |__ Andrea
 |___ Canon R6
@@ -304,7 +300,7 @@ Andrea's Individual External Library
 |___ iPhone 17
 |____ 20251106-122423.jpg
 ```
-
+*NOTE: The final result will look exactly like the example above **only** if the Folder Restructure feature is also enabled.*
 
 ### Logic:
 Is the pic/video included in an album that is shared?
@@ -313,14 +309,14 @@ Is the pic/video included in an album that is shared?
 		- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Shared)
 		- Update database
 	- IF **NO** (album is unshared):
-		- Relocate picture/video to User1/User2's Individual External Libraries respectively
+		- Relocate picture/video to User1/User2's External Libraries respectively
 		- **Do not** change ownership
 		- Update database
 
 
 ### How to Enable the Pseudo `UserShared` feature
 
-1 - Make sure a pseudo user exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add Storage Label for this particular user and it is not considered in the `INDIVIDUAL_USERS_COUNT`. 
+1 - Make sure a pseudo user exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add Storage Label for this particular user and it is not considered in the `EXTERNAL_LIBRARIES_COUNT`. 
 Take note of the `UserShared` UUID number in Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED` replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
   
 2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to: `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.

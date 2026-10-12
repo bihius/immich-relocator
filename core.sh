@@ -8,8 +8,8 @@
 # still matches — do NOT rewrite checksum to sha1-path or you'll trigger
 # full re-upload.
 #
-# Supports any number of individual users (configured in .env) and an
-# optional shared library (enabled by setting OWNER_SHARED to a real UUID).
+# Supports any number of External Libraries (configured in .env) and an
+# optional shared External Library (enabled by setting OWNER_SHARED to a real UUID).
 #
 # Options:
 #   --dry-run     Count-only: prints total files to relocate, no side effects
@@ -32,9 +32,7 @@ source "$(dirname "$0")/.env"
 # --- Validate required config (fail fast) ---------------------------------
 : "${SRC_DIR:?ERROR: SRC_DIR not set in .env}"
 : "${UPLOAD_MOUNT:?ERROR: UPLOAD_MOUNT not set in .env}"
-: "${INDIVIDUAL_USERS_COUNT:?ERROR: INDIVIDUAL_USERS_COUNT not set in .env}"
-: "${DEST_SHARED:?ERROR: DEST_SHARED not set in .env}"
-: "${LIBRARY_NAME_SHARED:?ERROR: LIBRARY_NAME_SHARED not set in .env}"
+: "${EXTERNAL_LIBRARIES_COUNT:?ERROR: EXTERNAL_LIBRARIES_COUNT not set in .env}"
 : "${OWNER_SHARED:?ERROR: OWNER_SHARED not set in .env}"
 : "${PGDATABASE:?ERROR: PGDATABASE not set in .env}"
 : "${PGUSER:?ERROR: PGUSER not set in .env}"
@@ -42,47 +40,71 @@ source "$(dirname "$0")/.env"
 : "${PGPORT:?ERROR: PGPORT not set in .env}"
 : "${PGPASSWORD:?ERROR: PGPASSWORD not set in .env}"
 
+# Conditional validation based on mode -------------------------------------
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
+  : "${SINGLE_LIB_NAME:?ERROR: SINGLE_LIB_NAME not set in .env (required when EXTERNAL_LIBRARIES_COUNT=1)}"
+  : "${SINGLE_DEST:?ERROR: SINGLE_DEST not set in .env (required when EXTERNAL_LIBRARIES_COUNT=1)}"
+else
+  : "${DEST_SHARED:?ERROR: DEST_SHARED not set in .env}"
+  : "${LIBRARY_NAME_SHARED:?ERROR: LIBRARY_NAME_SHARED not set in .env}"
+  for i in $(seq 1 "$EXTERNAL_LIBRARIES_COUNT"); do
+    var="USER_${i}_LIB_NAME"
+    : "${!var:?ERROR: $var not set in .env}"
+    var="USER_${i}_DEST"
+    : "${!var:?ERROR: $var not set in .env}"
+    var="USER_${i}_LABEL"
+    : "${!var:?ERROR: $var not set in .env}"
+  done
+fi
+
+# FOLDER_RESTRUCTURE defaults to false if unset ---------------------------
+FOLDER_RESTRUCTURE="${FOLDER_RESTRUCTURE:-false}"
+
 LOCK_FILE="$(dirname "$0")/.lock"
 
-# --- Load individual users from .env --------------------------------------
+# --- Load users from .env (multi-library mode only) ----------------------
 USERS_LABELS=()
 USERS_DESTS=()
 USERS_LIB_NAMES=()
 USERS_LIB_IDS=()
 
-for i in $(seq 1 "$INDIVIDUAL_USERS_COUNT"); do
-  var="USER_${i}_LABEL"
-  : "${!var:?ERROR: $var not set in .env}"
-  USERS_LABELS+=("${!var}")
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
+  for i in $(seq 1 "$EXTERNAL_LIBRARIES_COUNT"); do
+    var="USER_${i}_LABEL"
+    USERS_LABELS+=("${!var}")
 
-  var="USER_${i}_DEST"
-  : "${!var:?ERROR: $var not set in .env}"
-  USERS_DESTS+=("${!var}")
+    var="USER_${i}_DEST"
+    USERS_DESTS+=("${!var}")
 
-  var="USER_${i}_LIB_NAME"
-  : "${!var:?ERROR: $var not set in .env}"
-  USERS_LIB_NAMES+=("${!var}")
-done
+    var="USER_${i}_LIB_NAME"
+    USERS_LIB_NAMES+=("${!var}")
+  done
+fi
 
 # Normalize destination paths (ensure trailing slash) ----------------------
-for i in "${!USERS_DESTS[@]}"; do
-  USERS_DESTS[$i]="${USERS_DESTS[$i]%/}/"
-done
-DEST_SHARED="${DEST_SHARED%/}/"
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
+  for i in "${!USERS_DESTS[@]}"; do
+    USERS_DESTS[$i]="${USERS_DESTS[$i]%/}/"
+  done
+  DEST_SHARED="${DEST_SHARED%/}/"
+else
+  SINGLE_DEST="${SINGLE_DEST%/}/"
+fi
 
 # --- Auto-generate RENAME_SED from user labels -----------------------------
 RENAME_SED=""
-for label in "${USERS_LABELS[@]}"; do
-  rule="s|^library/${label}/[0-9]+/([^/]+)/|\1/${label}/|"
-  if [[ -n "$RENAME_SED" ]]; then
-    RENAME_SED="${RENAME_SED}; ${rule}"
-  else
-    RENAME_SED="${rule}"
-  fi
-done
+if [[ "$FOLDER_RESTRUCTURE" == "true" ]] && [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
+  for label in "${USERS_LABELS[@]}"; do
+    rule="s|^library/${label}/[0-9]+/([^/]+)/|\1/${label}/|"
+    if [[ -n "$RENAME_SED" ]]; then
+      RENAME_SED="${RENAME_SED}; ${rule}"
+    else
+      RENAME_SED="${rule}"
+    fi
+  done
+fi
 
 # --- Parse args -------------------------------------------------------------
-
 DRY_RUN=false
 VERBOSE=false
 FULL=false
@@ -101,12 +123,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- Helpers ----------------------------------------------------------------
-
 log() { printf '[%s] %s\n' "$(date '+%Y-%m%d %H:%M:%S')" "$*"; }
 vlog() { if [[ "$VERBOSE" == true ]]; then log "$@"; fi; }
 
 # --- Preflight --------------------------------------------------------------
-
 while true; do
   if ( set -C; echo $$ > "$LOCK_FILE" ) 2>/dev/null; then
     break
@@ -132,10 +152,19 @@ if [[ ! -L "$SYMLINK_PATH" ]]; then
 fi
 
 # --- Determine if shared library is enabled --------------------------------
-if [[ "$OWNER_SHARED" == "00000000-0000-0000-0000-000000000000" ]]; then
-  ENABLE_SHARED=false
-else
+ENABLE_SHARED=false
+if [[ "$OWNER_SHARED" != "00000000-0000-0000-0000-000000000000" ]] \
+   && [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
   ENABLE_SHARED=true
+fi
+
+# --- Warn if multi-library mode without API key ----------------------------
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]] && [[ -z "$IMMICH_API_KEY" ]]; then
+  log "WARN: EXTERNAL_LIBRARIES_COUNT > 1 but IMMICH_API_KEY is empty."
+  log "      Multi-library routing requires files to be in the /library/ path."
+  log "      If Storage Template is not already enabled in Immich, files may be in /upload/"
+  log "      and will be skipped (no label match). Set an API key or enable Storage Template"
+  log "      via Immich GUI (Administration -> Settings -> Storage Template) before running."
 fi
 
 # --- Count-only dry-run (no relocation job, no library resolution needed) --
@@ -153,7 +182,6 @@ EOF
   exit 0
 fi
 
-
 # --- Resolve library UUIDs -------------------------------------------------
 if [[ "$ENABLE_SHARED" == true ]]; then
   if ! LIB_ID_SHARED=$(psql -At -v lib_name="$LIBRARY_NAME_SHARED" <<'EOF'
@@ -169,52 +197,77 @@ EOF
   fi
 fi
 
-for i in "${!USERS_LIB_NAMES[@]}"; do
-  if ! lib_id=$(psql -At -v lib_name="${USERS_LIB_NAMES[$i]}" <<'EOF'
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
+  if ! LIB_ID_SINGLE=$(psql -At -v lib_name="$SINGLE_LIB_NAME" <<'EOF'
 SELECT id FROM library WHERE name = :'lib_name' AND "deletedAt" IS NULL;
 EOF
   ); then
     echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
     exit 1
   fi
-  if [[ -z "$lib_id" ]]; then
-    echo "ERROR: Library '${USERS_LIB_NAMES[$i]}' not found. Create it in Immich first." >&2
+  if [[ -z "$LIB_ID_SINGLE" ]]; then
+    echo "ERROR: Library '$SINGLE_LIB_NAME' not found. Create it in Immich first." >&2
     exit 1
   fi
-  USERS_LIB_IDS+=("$lib_id")
-done
-
+else
+  for i in "${!USERS_LIB_NAMES[@]}"; do
+    if ! lib_id=$(psql -At -v lib_name="${USERS_LIB_NAMES[$i]}" <<'EOF'
+SELECT id FROM library WHERE name = :'lib_name' AND "deletedAt" IS NULL;
+EOF
+    ); then
+      echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+      exit 1
+    fi
+    if [[ -z "$lib_id" ]]; then
+      echo "ERROR: Library '${USERS_LIB_NAMES[$i]}' not found. Create it in Immich first." >&2
+      exit 1
+    fi
+    USERS_LIB_IDS+=("$lib_id")
+  done
+fi
 
 # --- Warn if RENAME_SED won't match -----------------------------------------
-if ! echo "library/${USERS_LABELS[0]}/2026/test/file.jpg" | sed -E "$RENAME_SED" | grep -qv "library/"; then
-  log "WARN: RENAME_SED does not match current storage labels — folder restructuring will be skipped."
+if [[ "$FOLDER_RESTRUCTURE" == "true" ]] && [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
+  if ! echo "library/${USERS_LABELS[0]}/2026/test/file.jpg" | sed -E "$RENAME_SED" | grep -qv "library/"; then
+    log "WARN: RENAME_SED does not match current storage labels — folder restructuring will be skipped."
+  fi
 fi
 
 # --- Startup log ------------------------------------------------------------
 log "=== Immich Relocator ==="
 log "Mode:        $([[ "$DRY_RUN" == true ]] && echo DRY-RUN || echo APPLY)"
 log "Source:      $SRC_DIR"
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
+  log "Single:      $SINGLE_DEST ($LIB_ID_SINGLE)"
+else
+  for i in "${!USERS_LABELS[@]}"; do
+    log "$(printf '%-12s' "${USERS_LABELS[$i]}:") ${USERS_DESTS[$i]} (${USERS_LIB_IDS[$i]})"
+  done
+fi
 if [[ "$ENABLE_SHARED" == true ]]; then
   log "Shared:      $DEST_SHARED ($LIB_ID_SHARED)"
 else
-  log "Shared:      DISABLED (null UUID)"
+  log "Shared:      DISABLED"
 fi
-for i in "${!USERS_LABELS[@]}"; do
-  log "$(printf '%-12s' "${USERS_LABELS[$i]}:") ${USERS_DESTS[$i]} (${USERS_LIB_IDS[$i]})"
-done
+if [[ "$FOLDER_RESTRUCTURE" == "true" ]] && [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
+  log "Restructure: ENABLED"
+fi
 
 # --- Create destination dirs ------------------------------------------------
 if [[ "$DRY_RUN" == false ]]; then
+  if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
+    mkdir -p "$SINGLE_DEST"
+  else
+    for dest in "${USERS_DESTS[@]}"; do
+      mkdir -p "$dest"
+    done
+  fi
   if [[ "$ENABLE_SHARED" == true ]]; then
     mkdir -p "$DEST_SHARED"
   fi
-  for dest in "${USERS_DESTS[@]}"; do
-    mkdir -p "$dest"
-  done
 fi
 
 # --- Counters ---------------------------------------------------------------
-
 TOTAL=0
 MOVED=0
 SKIPPED_NOT_ON_DISK=0
@@ -223,10 +276,20 @@ SKIPPED_CONSTRAINT=0
 SKIPPED_NO_MATCH=0
 FAILED=0
 
+
 # --- Bulk query: get files + routing flag (one psql call) --------------------
 # Returns pipe-separated: originalPath | routing (shared|personal)
+# If API key is set, files are guaranteed to be in library/ (migration job ran).
+# If API key is empty, also check upload/ (storage template may be OFF or
+# the user may have run the migration job manually via GUI).
 
-if ! FILES_TO_RELOCATE=$(psql -At -v src_prefix="$SRC_DIR" <<'EOF'
+if [[ -n "$IMMICH_API_KEY" ]]; then
+  PATH_FILTER="a.\"originalPath\" LIKE :'src_prefix' || 'library/%'"
+else
+  PATH_FILTER="(a.\"originalPath\" LIKE :'src_prefix' || 'library/%' OR a.\"originalPath\" LIKE :'src_prefix' || 'upload/%')"
+fi
+
+if ! FILES_TO_RELOCATE=$(psql -At -v src_prefix="$SRC_DIR" <<EOF
 SELECT a."originalPath",
   CASE
     WHEN EXISTS (
@@ -242,18 +305,24 @@ SELECT a."originalPath",
 FROM asset a
 WHERE a."deletedAt" IS NULL
   AND a."libraryId" IS NULL
-  AND a."originalPath" LIKE :'src_prefix' || 'library/%';
+  AND $PATH_FILTER;
 EOF
 ); then
   echo "ERROR: Failed to query assets from database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
   exit 1
 fi
 
-# --- Warn if no files match expected path pattern ---------------------------
-if [[ -n "$FILES_TO_RELOCATE" ]] && \
-   ! echo "$FILES_TO_RELOCATE" | grep -q "library/${USERS_LABELS[0]}/\|library/${USERS_LABELS[1]}/"; then
-  log "WARN: No files match expected path pattern. Check your storage template and storage labels."
+# --- Warn if no files match expected path pattern (multi-library only) ------
+if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]] && [[ -n "$FILES_TO_RELOCATE" ]]; then
+  PATTERN="library/${USERS_LABELS[0]}/"
+  for i in $(seq 1 $(( ${#USERS_LABELS[@]} - 1 ))); do
+    PATTERN="${PATTERN}\|library/${USERS_LABELS[$i]}/"
+  done
+  if ! echo "$FILES_TO_RELOCATE" | grep -q "$PATTERN"; then
+    log "WARN: No files match expected path pattern. Check your storage template and storage labels."
+  fi
 fi
+
 
 # --- Limit the Relocation to a set amount if limit flag is used -------------
 if [[ "$LIMIT" -gt 0 ]]; then
@@ -275,7 +344,13 @@ while IFS='|' read -r file routing; do
   fi
 
   # Determine destination, library ID, and ownership
-  if [[ "$routing" == "shared" ]] && [[ "$ENABLE_SHARED" == true ]]; then
+  if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
+    # Single-library mode: everything goes to the single library
+    dest="$SINGLE_DEST"
+    lib_id="$LIB_ID_SINGLE"
+    owner_id="00000000-0000-0000-0000-000000000000"
+    set_owner="false"
+  elif [[ "$routing" == "shared" ]] && [[ "$ENABLE_SHARED" == true ]]; then
     dest="$DEST_SHARED"
     lib_id="$LIB_ID_SHARED"
     owner_id="$OWNER_SHARED"
@@ -302,7 +377,15 @@ while IFS='|' read -r file routing; do
 
   rel_path="${file#"$SRC_DIR"}"
   rel_path="${rel_path//$'\r'/}"
-  new_path="${dest}$(echo "$rel_path" | sed -E "$RENAME_SED")"
+  # Apply folder restructure only when enabled and RENAME_SED is non-empty
+  if [[ -n "$RENAME_SED" ]]; then
+    new_path="${dest}$(echo "$rel_path" | sed -E "$RENAME_SED")"
+  else
+    # Strip top-level Immich folder for a cleaner destination path
+    rel_path="${rel_path#library/}"
+    rel_path="${rel_path#upload/}"
+    new_path="${dest}${rel_path}"
+  fi
 
   if [[ -e "$new_path" ]]; then
     vlog "skip (destination exists): $orig_name"
@@ -378,7 +461,6 @@ EOF
 done <<< "$FILES_TO_RELOCATE"
 
 # --- Summary ----------------------------------------------------------------
-
 log ""
 log "=== Summary ==="
 log "Total files seen:         $TOTAL"

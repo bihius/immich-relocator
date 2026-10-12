@@ -104,12 +104,9 @@ Immich Relocator can be configured with optional advanced features that will all
 Clone the Immich Relocator repository:
 ```bash
 git clone https://github.com/bihius/immich-relocator.git
-```
-Make scripts executable:
-```bash
 cd immich-relocator
-chmod +x relocator.sh core.sh psql
 ```
+
 ### Configure the script via `.env` file
 Create your `.env` file:
 ```bash

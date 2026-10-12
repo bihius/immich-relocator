@@ -6,6 +6,7 @@ on:
       - 'relocator.sh'
       - 'core.sh'
       - 'psql'
+      - '.env.example'
   pull_request:
 
 jobs:

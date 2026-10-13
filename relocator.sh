@@ -30,26 +30,25 @@ run_storage_template_job() {
   local max_wait_seconds=3600
   local elapsed=0
   
-  if ! response=$(curl -f -s -m 30 -X PUT "${api_url}/api/jobs/storageTemplateMigration" \
+  http_code=$(curl -s -m 30 -w '%{http_code}' -o /dev/null -X PUT "${api_url}/api/jobs/storageTemplateMigration" \
     -H "x-api-key: $IMMICH_API_KEY" \
     -H "Content-Type: application/json" \
-    -d '{"command": "start", "force": true}' 2>&1); then
-    if echo "$response" | grep -qi "Invalid API key"; then
-      echo "ERROR: Invalid API key. Check IMMICH_API_KEY in .env." >&2
-      exit 1
-    else
-      echo "ERROR: Failed to start Storage Template Migration job." >&2
-      echo "       Response: $response" >&2
-      echo "       Check IMMICH_API_URL (${api_url}) and IMMICH_API_KEY in .env." >&2
-      exit 1
-    fi
+    -d '{"command": "start", "force": true}')
+  
+  if [[ "$http_code" == "401" ]]; then
+    echo "ERROR: Invalid API key. Check IMMICH_API_KEY in .env." >&2
+    exit 1
+  elif [[ "$http_code" != "200" ]] && [[ "$http_code" != "201" ]]; then
+    echo "ERROR: Failed to start Storage Template Migration job (HTTP $http_code)." >&2
+    echo "       Check IMMICH_API_URL (${api_url}) and IMMICH_API_KEY in .env." >&2
+    exit 1
   fi
 
   while true; do
-    if ! status=$(curl -f -s -m 30 "${api_url}/api/queues/storageTemplateMigration" \
-      -H "x-api-key: $IMMICH_API_KEY" 2>&1); then
+    status=$(curl -s -m 30 "${api_url}/api/queues/storageTemplateMigration" \
+      -H "x-api-key: $IMMICH_API_KEY" 2>&1)
+    if [[ $? -ne 0 ]] || [[ -z "$status" ]]; then
       echo "ERROR: Failed to query queue status." >&2
-      echo "       Response: $status" >&2
       echo "       Immich server may be unavailable." >&2
       exit 1
     fi

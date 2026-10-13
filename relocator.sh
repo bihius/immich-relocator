@@ -9,6 +9,7 @@ source "$CORE_SCRIPT_DIR/.env"
 : "${UPLOAD_MOUNT:?ERROR: UPLOAD_MOUNT not set in .env}"
 : "${BACKUP_RETENTION_COUNT:?ERROR: BACKUP_RETENTION_COUNT not set in .env}"
 # IMMICH_API_KEY is optional — leave empty to skip storage template migration
+IMMICH_API_KEY="${IMMICH_API_KEY:-}"
 
 # --- Ensure psql wrapper is in PATH ---------------------------------------------
 export PATH="$CORE_SCRIPT_DIR:$PATH"

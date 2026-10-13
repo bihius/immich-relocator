@@ -159,6 +159,7 @@ if [[ "$OWNER_SHARED" != "00000000-0000-0000-0000-000000000000" ]] \
 fi
 
 # --- Warn if multi-library mode without API key ----------------------------
+IMMICH_API_KEY="${IMMICH_API_KEY:-}"
 if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]] && [[ -z "$IMMICH_API_KEY" ]]; then
   log "WARN: EXTERNAL_LIBRARIES_COUNT > 1 but IMMICH_API_KEY is empty."
   log "      Multi-library routing requires files to be in the /library/ path."

@@ -1,0 +1,4 @@
+.env
+db-backups/
+.lock
+*.log

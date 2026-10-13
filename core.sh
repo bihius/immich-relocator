@@ -95,7 +95,8 @@ fi
 RENAME_SED=""
 if [[ "$FOLDER_RESTRUCTURE" == "true" ]] && [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]]; then
   for label in "${USERS_LABELS[@]}"; do
-    rule="s|^library/${label}/[0-9]+/([^/]+)/|\1/${label}/|"
+    escaped_label=$(printf '%s\n' "$label" | sed 's/[.[\*^$()+?{|]/\\&/g')
+    rule="s|^library/${escaped_label}/[0-9]+/([^/]+)/|\1/${label}/|"
     if [[ -n "$RENAME_SED" ]]; then
       RENAME_SED="${RENAME_SED}; ${rule}"
     else
@@ -321,9 +322,11 @@ fi
 
 # --- Warn if no files match expected path pattern (multi-library only) ------
 if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]] && [[ -n "$FILES_TO_RELOCATE" ]]; then
-  PATTERN="library/${USERS_LABELS[0]}/"
+  escaped_label_0=$(printf '%s\n' "${USERS_LABELS[0]}" | sed 's/[.[\*^$]/\\&/g')
+  PATTERN="library/${escaped_label_0}/"
   for i in $(seq 1 $(( ${#USERS_LABELS[@]} - 1 ))); do
-    PATTERN="${PATTERN}\|library/${USERS_LABELS[$i]}/"
+    escaped_label=$(printf '%s\n' "${USERS_LABELS[$i]}" | sed 's/[.[\*^$]/\\&/g')
+    PATTERN="${PATTERN}\|library/${escaped_label}/"
   done
   if ! echo "$FILES_TO_RELOCATE" | grep -q "$PATTERN"; then
     log "WARN: No files match expected path pattern. Check your storage template and storage labels."
@@ -367,7 +370,8 @@ while IFS='|' read -r file routing; do
     dest=""
     lib_id=""
     for i in "${!USERS_LABELS[@]}"; do
-      if [[ "$file" == *"/library/${USERS_LABELS[$i]}/"* ]]; then
+      prefix="/library/${USERS_LABELS[$i]}/"
+      if [[ "${file#*$prefix}" != "$file" ]]; then
         dest="${USERS_DESTS[$i]}"
         lib_id="${USERS_LIB_IDS[$i]}"
         break

@@ -23,19 +23,60 @@ done
 
 # --- Helper: run storage template migration job ---------------------------------
 run_storage_template_job() {
-  curl -s -X PUT http://localhost:2283/api/jobs/storageTemplateMigration \
+  local api_url="${IMMICH_API_URL:-http://localhost:2283}"
+  local max_wait_seconds=3600
+  local elapsed=0
+  
+  if ! response=$(curl -f -s -m 30 -X PUT "${api_url}/api/jobs/storageTemplateMigration" \
     -H "x-api-key: $IMMICH_API_KEY" \
     -H "Content-Type: application/json" \
-    -d '{"command": "start", "force": true}'
+    -d '{"command": "start", "force": true}' 2>&1); then
+    if echo "$response" | grep -qi "Invalid API key"; then
+      echo "ERROR: Invalid API key. Check IMMICH_API_KEY in .env." >&2
+      exit 1
+    else
+      echo "ERROR: Failed to start Storage Template Migration job." >&2
+      echo "       Response: $response" >&2
+      echo "       Check IMMICH_API_URL (${api_url}) and IMMICH_API_KEY in .env." >&2
+      exit 1
+    fi
+  fi
 
   while true; do
-    status=$(curl -s http://localhost:2283/api/queues/storageTemplateMigration \
-      -H "x-api-key: $IMMICH_API_KEY")
+    if ! status=$(curl -f -s -m 30 "${api_url}/api/queues/storageTemplateMigration" \
+      -H "x-api-key: $IMMICH_API_KEY" 2>&1); then
+      echo "ERROR: Failed to query queue status." >&2
+      echo "       Response: $status" >&2
+      echo "       Immich server may be unavailable." >&2
+      exit 1
+    fi
+    
     active=$(echo "$status" | grep -o '"active":[0-9]*' | cut -d: -f2)
     waiting=$(echo "$status" | grep -o '"waiting":[0-9]*' | cut -d: -f2)
+    
+    if [[ -z "$active" || -z "$waiting" ]]; then
+      echo "ERROR: Could not parse queue status. Immich may have changed its API format." >&2
+      exit 1
+    fi
+    
+    is_paused=$(echo "$status" | grep -o '"isPaused":[^,}]*' | cut -d: -f2 | tr -d ' "')
+    if [[ "$is_paused" == "true" ]]; then
+      echo "ERROR: Storage Template Migration queue is paused." >&2
+      echo "       Please unpause it in Immich GUI: Administration -> Jobs" >&2
+      exit 1
+    fi
+    
     if [[ "$active" == "0" && "$waiting" == "0" ]]; then
       break
     fi
+    
+    elapsed=$((elapsed + 10))
+    if [[ $elapsed -ge $max_wait_seconds ]]; then
+      echo "ERROR: Storage Template Migration job did not complete within $((max_wait_seconds / 60)) minutes." >&2
+      echo "       Check Immich logs for job status." >&2
+      exit 1
+    fi
+    
     sleep 10
   done
 }

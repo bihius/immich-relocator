@@ -33,9 +33,13 @@ run_storage_template_job() {
   http_code=$(curl -s -m 30 -w '%{http_code}' -o /dev/null -X PUT "${api_url}/api/jobs/storageTemplateMigration" \
     -H "x-api-key: $IMMICH_API_KEY" \
     -H "Content-Type: application/json" \
-    -d '{"command": "start", "force": true}')
+    -d '{"command": "start", "force": true}') || http_code=000
   
-  if [[ "$http_code" == "401" ]]; then
+  if [[ "$http_code" == "000" ]]; then
+    echo "ERROR: Connection timeout or network error." >&2
+    echo "       Check IMMICH_API_URL (${api_url}) is reachable." >&2
+    exit 1
+  elif [[ "$http_code" == "401" ]]; then
     echo "ERROR: Invalid API key. Check IMMICH_API_KEY in .env." >&2
     exit 1
   elif [[ "$http_code" != "200" ]] && [[ "$http_code" != "201" ]]; then

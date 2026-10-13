@@ -29,6 +29,8 @@ run_storage_template_job() {
   local api_url="${IMMICH_API_URL:-http://localhost:2283}"
   local max_wait_seconds=3600
   local elapsed=0
+
+  echo "Running Storage Template Migration job... this may take a while depending on your library size."
   
   http_code=$(curl -s -m 30 -w '%{http_code}' -o /dev/null -X PUT "${api_url}/api/jobs/storageTemplateMigration" \
     -H "x-api-key: $IMMICH_API_KEY" \

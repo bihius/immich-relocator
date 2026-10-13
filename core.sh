@@ -150,6 +150,8 @@ trap 'rm -f "$LOCK_FILE"' EXIT
 
 export LC_ALL=C
 export PGDATABASE PGUSER PGHOST PGPORT PGPASSWORD
+POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-immich_postgres}"
+export POSTGRES_CONTAINER
 
 # --- Verify symlink exists ------------------------------------------------
 SYMLINK_PATH="${SRC_DIR%/}"

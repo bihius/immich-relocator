@@ -10,6 +10,8 @@ source "$CORE_SCRIPT_DIR/.env"
 : "${BACKUP_RETENTION_COUNT:?ERROR: BACKUP_RETENTION_COUNT not set in .env}"
 # IMMICH_API_KEY is optional — leave empty to skip storage template migration
 IMMICH_API_KEY="${IMMICH_API_KEY:-}"
+# POSTGRES_CONTAINER defaults to immich_postgres if not set
+POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-immich_postgres}"
 
 # --- Ensure psql wrapper is in PATH ---------------------------------------------
 export PATH="$CORE_SCRIPT_DIR:$PATH"
@@ -148,8 +150,8 @@ trap 'echo "[relocator] Restarting immich-server after failure/exit..." >&2; cd 
 
 # --- Create db backup -----------------------------------------------------------
 mkdir -p "$CORE_SCRIPT_DIR/db-backups"
-BACKUP_FILE="$CORE_SCRIPT_DIR/db-backups/immich_backup_$(date +%Y%m%d_%H%M).sql"
-docker exec immich_postgres pg_dump -U postgres immich > "$BACKUP_FILE"
+BACKUP_FILE="$CORE_SCRIPT_DIR/db-backups/immich_backup_$(date +%Y%m%d_%H%M%S).sql"
+docker exec "$POSTGRES_CONTAINER" pg_dump -U "$PGUSER" "$PGDATABASE" > "$BACKUP_FILE"
 
 # --- Verify backup integrity ----------------------------------------------------
 if [[ ! -s "$BACKUP_FILE" ]] || ! grep -q "PostgreSQL database dump complete" "$BACKUP_FILE"; then

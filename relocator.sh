@@ -142,10 +142,19 @@ if [[ -n "$IMMICH_API_KEY" ]]; then
   run_storage_template_job
 fi
 
+# --- Quick check: skip if 0 files to relocate ----------------------------------
+cd "$CORE_SCRIPT_DIR"
+if COUNT=$(./core.sh --dry-run 2>/dev/null | grep -oP 'Files to relocate: \K\d+'); then
+  if [[ "$COUNT" == "0" ]]; then
+    echo "[relocator] No files to relocate. Exiting without stopping server or backing up database."
+    exit 0
+  fi
+fi
+
 # --- Shut down immich-server container  -----------------------------------------
 cd "$COMPOSE_DIR"
 docker compose stop immich-server
-trap 'echo "[relocator] Restarting immich-server after failure/exit..." >&2; cd "$COMPOSE_DIR" && docker compose up -d immich-server 2>/dev/null || true' EXIT
+trap 'echo "[relocator] Restarting immich-server..." >&2; cd "$COMPOSE_DIR" && docker compose up -d immich-server 2>/dev/null || true' EXIT
 
 
 # --- Create db backup -----------------------------------------------------------

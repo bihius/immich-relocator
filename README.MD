@@ -4,7 +4,7 @@
 
 </div>
 
-Relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
+Immich Relocator (formerly immich-migrate-to-external-library), can relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
 
 ### Optional Advanced Features
 Immich Relocator can be configured with optional advanced features that will allow you to:
@@ -25,7 +25,8 @@ Immich Relocator can be configured with optional advanced features that will all
 ## Table of Content
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
-- [Install, Configure & First Run](#install-configure--first-run)
+- [How to Install & Configure](#how-to-install--configure)
+- [How to Use Immich Relocator](#how-to-use-immich-relocator)
 - [Storage Template Migration job (Optional)](#storage-template-migration-job-optional)
 - [Folder Restructure (Optional)](#folder-restructure-optional)
 - [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
@@ -93,7 +94,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 <div align="center">
 
-## Install, Configure & First Run
+## How to Install & Configure
 
 </div>
 
@@ -129,7 +130,18 @@ The command you will need to run will look something like:
 sudo ln -s /mnt/path/to/your/immich/folder /immich/internal/path/
 ```
 This is needed for the first time only, and it is the only time you will need to use `sudo`.
-  
+
+
+
+
+<div align="center">
+
+## How to use Immich Relocator
+
+</div>
+
+
+
 ### Usage: flags and full run modes
 
 The script runs with a simple `./relocator.sh` command, but you have the option to use some optional flags:

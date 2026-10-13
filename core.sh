@@ -398,7 +398,7 @@ while IFS='|' read -r file routing; do
     lib_id=""
     for i in "${!USERS_LABELS[@]}"; do
       prefix="/library/${USERS_LABELS[$i]}/"
-      if [[ "${file#*$prefix}" != "$file" ]]; then
+      if [[ "${file#*"$prefix"}" != "$file" ]]; then
         dest="${USERS_DESTS[$i]}"
         lib_id="${USERS_LIB_IDS[$i]}"
         break

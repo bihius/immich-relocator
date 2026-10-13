@@ -169,11 +169,11 @@ fi
 
 # --- Warn about stack ownership inconsistency when ownership changes ---------
 if [[ "$ENABLE_SHARED" == true ]] && [[ "$DRY_RUN" == false ]]; then
-  if STACK_COUNT=$(psql -At <<'EOF' 2>/dev/null
+  if STACK_COUNT=$(psql -At <<'EOF'
 SELECT COUNT(DISTINCT a.id) FROM asset a
-JOIN asset_stack ast ON ast."assetId" = a.id
 WHERE a."deletedAt" IS NULL
   AND a."libraryId" IS NULL
+  AND a."stackId" IS NOT NULL
   AND EXISTS (
     SELECT 1 FROM album_asset aa
     JOIN album_user au ON au."albumId" = aa."albumId"

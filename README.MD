@@ -36,8 +36,9 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
-<div align="center">
+<br>
 
+<div align="center">
 
 ## The Technical Stuff
 
@@ -74,8 +75,8 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
+<br>
 <div align="center">
-
 
 ## Prerequisites
 
@@ -94,6 +95,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 ---
 
+<br>
 <div align="center">
 
 ## How to Install & Configure
@@ -135,7 +137,7 @@ This is needed for the first time only, and it is the only time you will need to
 
 
 
-
+<br>
 <div align="center">
 
 ## How to use Immich Relocator
@@ -185,7 +187,7 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 
 ---
 
-
+<br>
 <div align="center">
 
 ## Storage Template Migration job (Optional)
@@ -213,7 +215,7 @@ Done.
 
 ---
 
-
+<br>
 <div align="center">
 
 ## Folder Restructure (Optional)
@@ -281,7 +283,7 @@ If your external library destination is mounted via CIFS/SMB (most NAS shares), 
 
 
 ---
-
+<br>
 <div align="center">
 
 ## Pseudo `UserShared` - For the Immich Partner  (Optional)
@@ -398,7 +400,7 @@ Done. The Pseudo `SharedUser` feature is now enabled.
 
 
 ---
-
+<br>
 <div align="center">
 
 ## Troubleshooting
@@ -417,7 +419,7 @@ Done. The Pseudo `SharedUser` feature is now enabled.
 | Backup file appears "truncated"                          | The backup is likely fine — the integrity check searches for the `PostgreSQL database dump complete` marker. If it's missing, the `pg_dump` was interrupted. Re-run. |
 
 ---
-
+<br>
 <div align="center">
 
 ## Unattended / Cron usage
@@ -438,7 +440,7 @@ Example cron (runs daily at 03:00):
 
 
 ---
-
+<br>
 <div align="center">
 
 ## Restoring from a Database Backup

@@ -467,8 +467,13 @@ docker exec -i immich_postgres psql -U postgres immich < ~/immich-relocator/db-b
 docker compose up -d immich-server
 ```
 
+<br>
+<div align="center">
 
 ## A.I. Disclosure & Disclaimer
+
+</div>
+
 
 Although a lot of manual hard work happened for this project, a large part of the Immich Relocator code was implemented by various AI models. Having said that, multiple developers, with actual blood in their veins, have envisioned the logic and tested the outcomes the best they could on their testing environments. 
 Every words contained in this readme file (apart from the prerequisites and troubleshooting tables) were written by a human hand, to ensure the usage is clear and with detailed examples.

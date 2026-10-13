@@ -85,17 +85,16 @@ run_storage_template_job() {
 }
 
 # --- Validate --limit flag early -----------------------------------------------
-for arg in "$@"; do
-  if [[ "$arg" == "--limit" ]]; then
-    shift
-    limit_val="${1:-}"
+args=("$@")
+for i in "${!args[@]}"; do
+  if [[ "${args[$i]}" == "--limit" ]]; then
+    limit_val="${args[$((i + 1))]:-}"
     if [[ ! "$limit_val" =~ ^[0-9]+$ ]] || [[ "$limit_val" -le 0 ]]; then
       echo "ERROR: --limit requires a positive integer, got: '$limit_val'" >&2
       exit 1
     fi
     break
   fi
-  shift
 done
 
 # --- DRY-RUN (count only) -------------------------------------------------------

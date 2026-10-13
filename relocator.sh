@@ -82,10 +82,24 @@ run_storage_template_job() {
   done
 }
 
+# --- Validate --limit flag early -----------------------------------------------
+for arg in "$@"; do
+  if [[ "$arg" == "--limit" ]]; then
+    shift
+    limit_val="${1:-}"
+    if [[ ! "$limit_val" =~ ^[0-9]+$ ]] || [[ "$limit_val" -le 0 ]]; then
+      echo "ERROR: --limit requires a positive integer, got: '$limit_val'" >&2
+      exit 1
+    fi
+    break
+  fi
+  shift
+done
+
 # --- DRY-RUN (count only) -------------------------------------------------------
 if [[ "$IS_DRY_RUN" == true && "$IS_FULL" != true ]]; then
   cd "$CORE_SCRIPT_DIR"
-  ./core.sh --dry-run
+  ./core.sh --dry-run "$@"
   echo ""
   echo "NOTE: Use the --dry-run --full flag for more detailed results. Mind that using --full may also execute a Storage Template Migration job, if you configured your .env file to allow it."
   echo "A Storage Template Migration job may take time, depending on the amount of media you have."
@@ -108,7 +122,7 @@ if [[ "$IS_DRY_RUN" == true && "$IS_FULL" == true ]]; then
     run_storage_template_job
   fi
   cd "$CORE_SCRIPT_DIR"
-  ./core.sh --dry-run --full
+  ./core.sh --dry-run --full "$@"
   exit 0
 fi
 

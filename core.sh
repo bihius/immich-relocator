@@ -114,9 +114,15 @@ while [[ $# -gt 0 ]]; do
     --dry-run) DRY_RUN=true; shift ;;
     --full)    FULL=true; shift ;;
     --verbose) VERBOSE=true; shift ;;
-    --limit) LIMIT="${2:?ERROR: --limit requires a number}"; shift 2 ;;
+    --limit) 
+      LIMIT="${2:?ERROR: --limit requires a number}"
+      if [[ ! "$LIMIT" =~ ^[0-9]+$ ]] || [[ "$LIMIT" -le 0 ]]; then
+        echo "ERROR: --limit requires a positive integer, got: '$LIMIT'" >&2
+        exit 1
+      fi
+      shift 2 ;;
     --help)
-      sed -n '2,15p' "$0" | sed 's/^# \?//'
+      sed -n '2,20p' "$0" | sed 's/^# \?//'
       exit 0 ;;
     *) echo "ERROR: unknown arg: $1" >&2; exit 1 ;;
   esac

@@ -38,6 +38,7 @@ Immich Relocator can be configured with optional advanced features that will all
 
 <div align="center">
 
+
 ## The Technical Stuff
 
 </div>
@@ -74,6 +75,7 @@ Immich Relocator can be configured with optional advanced features that will all
 ---
 
 <div align="center">
+
 
 ## Prerequisites
 

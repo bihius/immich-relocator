@@ -167,6 +167,31 @@ if [[ "$OWNER_SHARED" != "00000000-0000-0000-0000-000000000000" ]] \
   ENABLE_SHARED=true
 fi
 
+# --- Warn about stack ownership inconsistency when ownership changes ---------
+if [[ "$ENABLE_SHARED" == true ]] && [[ "$DRY_RUN" == false ]]; then
+  if STACK_COUNT=$(psql -At <<'EOF' 2>/dev/null
+SELECT COUNT(DISTINCT a.id) FROM asset a
+JOIN asset_stack ast ON ast."assetId" = a.id
+WHERE a."deletedAt" IS NULL
+  AND a."libraryId" IS NULL
+  AND EXISTS (
+    SELECT 1 FROM album_asset aa
+    JOIN album_user au ON au."albumId" = aa."albumId"
+    JOIN album al ON al.id = aa."albumId"
+    WHERE aa."assetId" = a.id
+      AND au.role != 'owner'
+      AND al."deletedAt" IS NULL
+  );
+EOF
+  ); then
+    if [[ -n "$STACK_COUNT" ]] && [[ "$STACK_COUNT" -gt 0 ]]; then
+      log "WARN: $STACK_COUNT stacked assets will have ownership changed to UserShared."
+      log "      Stack containers will remain owned by original users, creating inconsistent state."
+      log "      Consider unstacking these photos before running, or skip Pseudo UserShared feature."
+    fi
+  fi
+fi
+
 # --- Warn if multi-library mode without API key ----------------------------
 IMMICH_API_KEY="${IMMICH_API_KEY:-}"
 if [[ "$EXTERNAL_LIBRARIES_COUNT" -gt 1 ]] && [[ -z "$IMMICH_API_KEY" ]]; then

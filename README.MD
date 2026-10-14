@@ -93,7 +93,7 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 | --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | 1   | Immich is fully up and running                                                                                   | `docker compose ps` in your Immich folder shows all containers green |
 | 2   | Bash 4+ and Docker on the host                                                                                   | `bash --version`, `docker --version`                                 |
-| 3   | At least one external library created in Immich (optionally one per user, and one shared possible     | Administration → Libraries → Add                                     |
+| 3   | At least one external library created in Immich (optionally one per user, and one shared)     | Administration → Libraries → Add                                     |
 | 4   | The external library mount paths exist and are writable by the host user running the script                      | `ls -la /mnt/your/ext/library/path`                                  |
 | 5   | A symlink from the Immich container's upload path to the host mount                                              | `ls -l /path/to/symlink` (should point to the host mount)            |
 | 6   | Optional: Storage Labels set for each user (optional, but recommended)                                | Administration → Users → Edit → "Storage Label"                      |

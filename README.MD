@@ -109,7 +109,7 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 
 
 ### How to Install
-ℹ In these examples we will use Debian specific commands, please adjust according to your OS.
+ℹ In these examples we will use Debian-specific commands, please adjust according to your OS.
 
 Clone the Immich Relocator repository:
 ```bash
@@ -128,13 +128,13 @@ nano .env
 Fill in every non-optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional advanced feature.
 
 ### Create a symlink that points to your docker location
-The easiest way to do this, is to run the script for the first time using the `--dry-run` flag and follow the help info about how to create the symlink:
+The easiest way to do this is to run the script for the first time using the `--dry-run` flag and follow the instructions about how to create the symlink:
 ```bash
 ./relocator.sh --dry-run
 # → if it errors with "Symlink ... not found. Create it: sudo ln -s ..."
-#   Run that suggested cmd exactly as shown, then re-run --dry-run to confirm it now works
+#   Run that suggested command exactly as shown, then re-run --dry-run to confirm it works
 ```
-The command you will need to run will look something like:
+The command will look something like:
 ```bash
 sudo ln -s /mnt/path/to/your/immich/folder /immich/internal/path/
 ```
@@ -160,10 +160,9 @@ The script runs with a simple `./relocator.sh` command, but you have the option 
 | `--help`           | Print help text.                                                                                                                                                  |
 | `--dry-run`        | Count only. Prints total files that would relocate if running the script again using no flags. Immich server is never stopped. Zero changes to files or database. |
 | `--dry-run --full` | Runs Storage Template Migration job (if API key set), then prints detailed per-file report. No files are relocated, server is never stopped.                      |
-| *No flag*          | Full relocation: Storage Template Migration job (if API key set) → stop server → backup db → relocate → restart server                                            |
+| *No flag*          | Full relocation: Storage Template Migration job (if API key set) → stop server → backup DB → relocate → restart server                                            |
 | `--limit N`        | Relocate files, but process only the first N files (useful for very large libraries). Re-run to continue where it left off.                                       |
 | `--verbose`        | Relocate files and log every single file processed (not just the summary).                                                                                        |
-|                    |                                                                                                                                                                   |
 
 ####  The `--dry-run` and `--dry-run --full` flags. Start with these!
 ```bash

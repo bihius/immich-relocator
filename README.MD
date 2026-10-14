@@ -13,7 +13,7 @@ Immich Relocator (formerly immich-migrate-to-external-library), can relocate all
 - Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
 - Cron: set and forget unattended scheduled relocations at the day/time you desire.
 - DB Backups: create a copy of your database before it modifies it.
-- Immich doesn't break. Even if your files have been relocated to an entirely different location it's like nothing has changed for Immich.
+- Immich doesn't break: even if your files have been relocated to an entirely different location it's like nothing has changed for Immich.
 - Duplicate prevention: no duplicates and no re-uploads after relocation, even with sync enabled on Immich mobile app.
 - Never lose albums, stacks, faces, tags, etc after relocation.
 - Safe mode: use `--dry-run` and `--dry-run --full` to estimate how many files would relocate without actually making any changes to your Immich.

@@ -367,7 +367,7 @@ Andrea's External Library
 |___ iPhone 17
 |____ 20251106-122423.jpg
 ```
-*NOTE: The final result will look exactly like the example above **only** if the Folder Restructure feature is also enabled.*
+*NOTE: The final result will look exactly like the example above **only** if the Immich Relocator's Folder Restructure feature and Immich Storage Label option are also enabled.*
 
 ### Logic:
 Is the pic/video included in an album that is shared?

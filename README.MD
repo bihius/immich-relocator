@@ -435,7 +435,7 @@ You can schedule Immich Relocator via cron, but be aware:
 
 - If using the Pseudo `UserShared` feature, you should ensure that users have deleted the media from their own devices before the cron fires (see the "IMPORTANT" paragraph in the Pseudo `UserShared` section).
 - The lock file prevents overlapping runs. If a previous run is still going, the new one exits immediately.
-- Also remember that the Storage Template Migration job (if enabled) can take a long time for very large libraries. If you keep using Immich Relocator regularly, this process will become much faster, but it still depends on how many picture/videos you usually upload to the server.
+- Also remember that the Storage Template Migration job (if enabled) can take a long time for very large libraries. If you keep using Immich Relocator regularly, this process will become much faster, but it still depends on how many pictures/videos you usually upload to the server.
 
 Example cron (runs daily at 03:00):
 ```
@@ -460,7 +460,7 @@ cd $COMPOSE_DIR && docker compose stop immich-server
 ```
 
 Double-check where the files are. 
-In case of issues, the script should automatically relocate the files back to their original location (Immich internal "upload" folder), but if for whatever reason this did not happen, relocate the files manually back to their source.
+In case of issues, the script should automatically move the files back to their original location (Immich internal "upload" folder), but if for whatever reason this did not happen, move the files manually back to their source.
 
 Then:
 ```bash
@@ -479,6 +479,6 @@ docker compose up -d immich-server
 </div>
 
 
-Although a lot of manual hard work happened for this project, a large part of the Immich Relocator code was implemented by various AI models. Having said that, multiple developers, with actual blood in their veins, have envisioned the logic and tested the outcomes the best they could on their testing environments. 
-Every words contained in this readme file (apart from the prerequisites and troubleshooting tables) were written by a human hand, to ensure the usage is clear and with detailed examples.
-Please use Immich Relocator cautiously, especially during your first runs, and even more so, after any Immich update.
+Although a lot of manual hard work went into this project, a large part of the Immich Relocator code was implemented by various AI models. Having said that, multiple developers, with actual blood in their veins, have envisioned the logic and tested the outcomes as thoroughly as possible in their testing environments. 
+Every word contained in this readme file (apart from the prerequisites and troubleshooting tables) was written by a human hand, to ensure the usage is clear and with detailed examples.
+Please use Immich Relocator cautiously, especially during your first runs, and even more so after any Immich update.

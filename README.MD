@@ -114,7 +114,6 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 Clone the Immich Relocator repository:
 ```bash
 git clone https://github.com/bihius/immich-relocator.git
-cd immich-relocator
 ```
 
 ### Configure the script via `.env` file

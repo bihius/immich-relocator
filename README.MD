@@ -96,8 +96,7 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 | 3   | At least one external library created in Immich (optionally one per user, and one shared)     | Administration → Libraries → Add                                     |
 | 4   | The external library mount paths exist and are writable by the host user running the script                      | `ls -la /mnt/your/ext/library/path`                                  |
 | 5   | A symlink from the Immich container's upload path to the host mount                                              | `ls -l /path/to/symlink` (should point to the host mount)            |
-| 6   | Optional: Storage Labels set for each user (optional, but recommended)                                | Administration → Users → Edit → "Storage Label"                      |
-| 7   | Optional: An Immich API key with `job.create` and `queue.read` permissions (for Storage Template Migration only) | Create in: Administration → API Keys                                 |
+| 6   | Optional: An Immich API key with `job.create` and `queue.read` permissions (for Storage Template Migration only) | Create in: Administration → API Keys                                 |
 
 ---
 

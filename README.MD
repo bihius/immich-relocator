@@ -54,19 +54,18 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 ### What does Immich Relocator actually do?
 
 - Relocates non-hidden files from the upload or library directories into one or more permanent external libraries.
-- Updates PostgreSQL records to reflect the new file paths and marks assets as external library items.
-- Updates the Immich database (`originalPath`, `libraryId`, `isExternal`, optionally `ownerId`) so Immich continues serving the files as if nothing changed.
+- Updates the Immich database (originalPath, libraryId, isExternal, optionally ownerId) so Immich continues serving the files as if nothing changed.
 - Preserves the original SHA-1 content checksum, so clients' bulk-upload-check still matches and no re-upload is triggered.
 - Prevents duplicate relocations (`mv -n`)
-- Preserves original asset's file name.
-- `--dry-run`  and `--dry-run --full` modes shows exactly what would relocate before any relocation/UPDATE happens.
+- Preserves the original filename.
+- `--dry-run`  and `--dry-run --full` modes show exactly what would relocate before any relocation/UPDATE happens.
 - File-level locking prevents concurrent runs from corrupting state.
 - `NOT EXISTS` guard against the `(ownerId, libraryId, checksum)` UNIQUE constraint, so that content-duplicates already in the external library are skipped cleanly instead of aborting and leaving a half-relocated state.
-- Restores the moved file to source if the DB UPDATE skips it (no leaked files).
+- Restores the moved file to the source location if the DB UPDATE skips it (no leaked files).
 - Per-file progress + final summary counters.
-- Optionally runs a Storage Template Migration job before relocation
+- Optionally runs a Storage Template Migration job before relocation.
 - Optionally restructures the folder layout (e.g. from `library/John/2026/Album/` to `Album/John/`).
-- Removes empty folders from the `/immich/library` folder after relocations.
+- Removes empty folders from the `/immich/library` folder after relocation.
 - Creates a timestamped Postgres backup before touching anything.
 - Supports any number of External Libraries and an optional shared External Library.
 

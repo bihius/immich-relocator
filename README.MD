@@ -8,7 +8,7 @@ Immich Relocator (formerly immich-migrate-to-external-library), can relocate all
 
 ### FEATURES:
 - Relocate all pic & videos to a Single or Multiple External Libraries you chose (up to one per Immich user).
-- Storage Template Migration job: can run an unattended template migration right before relocating to final destination.
+- Storage Template Migration job: can run an unattended template migration right before relocating to external library/ies.
 - Folder Restructure: tidy-up even more the final shape of your folders.
 - Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
 - Cron: set and forget unattended scheduled relocations at the day/time you desire.

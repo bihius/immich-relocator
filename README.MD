@@ -124,7 +124,7 @@ cp .env.example .env
 nano .env
 ```
 
-Fill in every non-optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional advanced feature.
+Fill in every non-optional value present in the `.env.example` template. Follow the comments present in the file to see where to find the values of each variable and how to enable any optional feature.
 
 ### Create a symlink that points to your docker location
 The easiest way to do this is to run the script for the first time using the `--dry-run` flag and follow the instructions about how to create the symlink:

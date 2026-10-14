@@ -306,7 +306,7 @@ If your external library destination is mounted via CIFS/SMB (most NAS shares), 
 
 Currently the Immich experience of users sharing media with their partner is somewhat limiting:
 - A user can use "Partner Sharing", but that way **all** their pictures and videos are shared.
-- Otherwise, a user can share just albums, but then the items contained in that albums are not shown in the partner's timeline.
+- A user can share just albums, but then the items contained in those albums are not shown in the partner's timeline.
 
 So most people revert to using a third pseudo entity, which we will name `UserShared`. 
 `UserShared` has "Partner Sharing" enabled with both partners, finally allowing the two actual users to see shared items in both albums **and** timeline view. 

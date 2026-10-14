@@ -164,16 +164,16 @@ The script runs with a simple `./relocator.sh` command, but you have the option 
 | `--limit N`        | Relocate files, but process only the first N files (useful for very large libraries). Re-run to continue where it left off.                                       |
 | `--verbose`        | Relocate files and log every single file processed (not just the summary).                                                                                        |
 
-####  The `--dry-run` and `--dry-run --full` flags. Start with these!
+#### The `--dry-run` and `--dry-run --full` flags. Start with these!
 ```bash
 ./relocator.sh --dry-run
 ```
 This prints a single number: how many files would be relocated. Zero changes to files or database.
-In most cases this should be enough to have an idea of how many files would relocate, but run it again paired with the `--full` flag to have an even clearer and more detailed picture:
+In most cases this should be enough to get an idea of how many files would be relocated, but run it again paired with the `--full` flag for a more detailed picture:
 ```bash
 ./relocator.sh --dry-run --full
 ```
-The `--full` flag will make sure that a Storage Template Migration job runs before to count how many files would relocate (but only if you set an API key). Then a detailed per-file report will be printed. Your files will still **not** be relocated at this stage.
+The `--full` flag will make sure that a Storage Template Migration job runs before counting how many files would relocate (but only if you've set an API key). Then a detailed per-file report will be printed. Your files will still **not** be relocated at this stage.
   
 #### Relocate
 If everything looks good to you run the relocator:

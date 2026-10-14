@@ -334,7 +334,7 @@ Now one of them runs `./relocator.sh` with the Pseudo `UserShared` feature enabl
 
 But it does not stop here. Joe and Andrea can still have their own private pictures in an entirely separate external library. These are the pictures they decided not to share; they will be relocated elsewhere and will **not** change ownership.
 
-Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a subfolder named after their username (Storage Label).
+Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a subfolder named after their UUID or Storage Label.
 
 ### FOLDER STRUCTURE RESULT AFTER RELOCATION:
 ```

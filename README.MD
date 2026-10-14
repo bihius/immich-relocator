@@ -268,9 +268,9 @@ If you like the folder structure above, and you want to use this feature, you ca
 2 - Enable the [Storage Template Migration job](#storage-template-migration-job-optional) feature
 
 3 - Fill in every `USER_N_LABEL` in the `.env` file using one of the following options:
-- Storage Label (Administration → Users → Edit → "Storage Label"), or
-- UUID (Administration -> Users -> Profile -> ID)
-- Use `admin` for the first created admin user that does not use Storage Label
+- Storage Label (Administration → Users → Edit → "Storage Label").
+- UUID (Administration -> Users -> Profile -> ID).
+- Use `admin` for the first created admin user that does not use Storage Label.
 
 4 - Set the Folder Restructure variable to `true`:
 ```bash

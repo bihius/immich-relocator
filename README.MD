@@ -4,17 +4,17 @@
 
 </div>
 
-Immich Relocator (formerly immich-migrate-to-external-library), can relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
+Immich Relocator (formerly immich-migrate-to-external-library) can relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
 
 ### FEATURES:
-- Relocate all pic & videos to a Single or Multiple External Libraries you chose (up to one per Immich user).
+- Relocate all pics & videos to a Single or Multiple External Libraries you choose (up to one per Immich user).
 - Storage Template Migration job: can run an unattended template migration right before relocating to external library/ies.
-- Folder Restructure: tidy-up even more the final shape of your folders.
-- Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
-- Cron: set and forget unattended scheduled relocations at the day/time you desire.
-- DB Backups: create a copy of your database before it modifies it.
-- Immich doesn't break: even if your files have been relocated to an entirely different location it's like nothing has changed for Immich.
-- Duplicate prevention: no duplicates and no re-uploads after relocation, even with sync enabled on Immich mobile app.
+- Folder Restructure: further tidy up the final folder structure.
+- Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing, which only allows sharing all or nothing).
+- Cron: set-and-forget scheduled relocations at the day/time you desire.
+- DB Backups: create a copy of your database before modifying it.
+- Immich doesn't break: even if your files have been relocated to an entirely different location, it's like nothing has changed for Immich.
+- Duplicate prevention: no duplicates and no re-uploads after relocation, even with sync enabled on the Immich mobile app.
 - Never lose albums, stacks, faces, tags, etc after relocation.
 - Safe mode: use `--dry-run` and `--dry-run --full` to estimate how many files would relocate without actually making any changes to your Immich.
 - Partial Relocation: use `--limit N` to relocate only a pre-determined portion of your files.
@@ -22,10 +22,10 @@ Immich Relocator (formerly immich-migrate-to-external-library), can relocate all
 
 
 ### BENEFITS OF RELOCATING YOUR FILES TO AN EXTERNAL LIBRARY
-- Condense your files in one place: external library only (instead of external plus Immich's internal `upload` folder). 
-- Post-process all your pictures and videos comfortably from a single place using the desktop DAM of your choice (e.g. digiKam, Lightroom, etc), pointing to external library
-- Prevent accidental issues by optionally set up your Immich access to the external library as read only. Now edit via desktop DAM, and browse remotely via Immich clients.
-- Overcome Storage Template limitations and keep your files **always** in a neat structure, breaking out of the current necessity for Storage Template Migration job to be run manually via Immich GUI. Immich Relocator, can automate it.
+- Condense your files into one place: only in the external library (instead of split between external and Immich's internal `upload` or `library` folders). 
+- Post-process all your pictures and videos comfortably from a single place using the desktop DAM of your choice (e.g. digiKam, Lightroom, etc.), pointing to the external library.
+- Prevent accidental issues by optionally setting up your Immich access to the external library as read only. Edit via desktop DAM, and browse remotely via Immich clients.
+- Overcome Storage Template limitations and keep your files **always** in a neat structure, eliminating the need to run the Storage Template Migration job manually via the Immich GUI. Immich Relocator, can automate it.
 
 ---
 

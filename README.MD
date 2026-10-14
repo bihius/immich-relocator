@@ -235,8 +235,8 @@ Done.
 Immich Relocator can reorganise your final folder structure just before relocating files to the external library.
 
 This requires a combination of:
-- Storage Template Migration: so that the files are arranged in a predictable structure before relocation
-- Regex: this is a hardcoded value present in the script, so it cannot be altered by the user
+- Storage Template Migration: so that the files are arranged in a predictable structure before relocation.
+- Regex: this is a hardcoded value present in the script, so it cannot be altered by the user.
 
 Unless you modify the `core.sh` script, if you decide to use the Folder Restructure feature, your files will assume the following folder structure once they have reached their final destination:
 

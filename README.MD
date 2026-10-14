@@ -7,7 +7,7 @@
 Immich Relocator (formerly immich-migrate-to-external-library), can relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
 
 ### FEATURES:
-- Relocate all pic & videos to a Single or to Multiple External Libraries you chose (up to one per Immich user).
+- Relocate all pic & videos to a Single or Multiple External Libraries you chose (up to one per Immich user).
 - Storage Template Migration job: Can run an unattended template migration right before relocating to final destination.
 - Folder Restructure: tidy-up even more the final shape of your folders.
 - Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).

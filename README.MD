@@ -176,17 +176,17 @@ In most cases this should be enough to get an idea of how many files would be re
 The `--full` flag will make sure that a Storage Template Migration job runs before counting how many files would relocate (but only if you've set an API key). Then a detailed per-file report will be printed. Your files will still **not** be relocated at this stage.
   
 #### Relocate
-If everything looks good to you run the relocator:
+If everything looks good to you, run the relocator:
 ```bash
 ./relocator.sh
 ```
 
 #### The `--limit` flag
-But wait... to be extra safe. Limit the amount of files that will relocate during your first relocation:
+But wait... to be extra safe, limit the amount of files that will relocate during your first run:
 ```
 ./relocator.sh --limit 1000
 ```
-The command above limits the script to relocate only up to 1000 files (pictures or videos). This is useful to relocate a large library in batches, and also to test a small sample when you are configuring the `.env` file for the first time (e.g. `./relocator.sh --limit 2` will only relocate 2 files).
+The command above limits the script to relocate only up to 1000 files (pictures or videos). This is useful for relocating a large library in batches, and for testing a small sample while configuring the `.env` file for the first time (e.g. `./relocator.sh --limit 2` will only relocate 2 files).
 
 
 ---
@@ -199,7 +199,7 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 </div>
 
 
-Immich Relocator can run a Storage Template Migration job right before to relocate your files, so that the folder structure assumes its neatest form when it reaches the final destination.
+Immich Relocator can run a Storage Template Migration job right before relocating your files, so that the folder structure is in its neatest form at the final destination.
 
 You can use any Storage Template you like, and you can enable this feature in a few easy steps:
 
@@ -209,7 +209,7 @@ job.create
 queue.read
 ```
 
-2 - Paste the key in the `IMMICH_API_KEY` variable within the `.env` file: 
+2 - Paste the key into the `IMMICH_API_KEY` variable within the `.env` file: 
 ```bash
 IMMICH_API_KEY="add-your-api-key-here"
 ```
@@ -233,13 +233,13 @@ Done.
 - Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
 ```
 
-Immich Relocator can reorganise the way your final folder structure will look like, just before to relocate the files to the external library.
+Immich Relocator can reorganise your final folder structure just before relocating files to the external library.
 
-This is only possible using a combination of:
+This requires a combination of:
 - Storage Template Migration: so that the files are arranged in a predictable structure before relocation
 - Regex: this is a hardcoded value present in the script, so it cannot be altered by the user
 
-Unless modifying the `.core.sh` script, if you decide to use the Folder Restructure feature, your files will assume the following folder structure once they have reached their final destination:
+Unless you modify the `core.sh` script, if you decide to use the Folder Restructure feature, your files will assume the following folder structure once they have reached their final destination:
 
 ```
 External Library
@@ -278,12 +278,12 @@ If you like the folder structure above, and you want to use this feature, you ca
 FOLDER_RESTRUCTURE=true
 ```
   
-Done. Your Folder Restructure feature is now enabled. The most non-destructive way to test it all out for the first time, is to use `./relocator.sh --dry-run --full`, which should now run the Storage Template Migration job before to tell you how many files would relocate. If everything looks good to you, go ahead and run `./relocator.sh` with or without the `--limit N` flag.
+Done. The Folder Restructure feature is now enabled. The safest way to test it for the first time is to use `./relocator.sh --dry-run --full`, which will run the Storage Template Migration job before telling you how many files would be relocated. If everything looks good to you, go ahead and run `./relocator.sh` with or without the `--limit N` flag.
 
 
-LIMITATIONS: If you notice doubles during the next external library rescan inspect the full path of each photo using the "i" icon via the Immich GUI. It is highly likely that the path of the doubled items contained a path with different casing between the two versions.
-If your external library destination is mounted via CIFS/SMB (most NAS shares), the filesystem is case-insensitive. If a directory with different casing already exists at the destination (e.g. from a prior run or Immich's own indexing), the file may be placed in the wrong-case directory while the database records the intended case. This causes Immich to treat the file as new on the next scan, generating a duplicate. 
-`{{make}}` or `{{model}}` present in the Storage Template are the likely reason for failure here, inspect the casing and try to use `{{model}}` only, instead of `{{make}}_{{model}}`, in your Storage Template to see if that fixes the issue in the future.
+LIMITATIONS: If you notice doubles during the next external library rescan, inspect the full path of each photo using the "i" icon via the Immich GUI. It is highly likely that the paths of the doubled items differ in casing between the two versions.
+If your external library destination is mounted via CIFS/SMB (most NAS shares), the filesystem is case-insensitive. If a directory with different casing already exists at the destination (e.g. from a prior run or Immich's own indexing), the file may be placed in a directory with the wrong casing while the database records the intended case. This causes Immich to treat the file as new on the next scan, generating a duplicate. 
+`{{make}}` or `{{model}}` present in the Storage Template are the likely reason for failure here, inspect the casing and try using `{{model}}` only, instead of `{{make}}_{{model}}`, in your Storage Template to see if that prevents the issue in the future.
 
 
 ---

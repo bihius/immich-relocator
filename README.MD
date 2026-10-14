@@ -297,8 +297,8 @@ If your external library destination is mounted via CIFS/SMB (most NAS shares), 
 
 ```
 ⚠ IMPORTANT: This feature depends on:
-- Multi External Libraries is enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
-- Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
+- Multi External Libraries are enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
+- Storage Template Migration job feature is enabled (you added a correct API key in the relevant block)
 - Every pic/video of the Immich library has been added to at least one album
 - For a neater result, enabling the Folder Restructure feature is also suggested
 ```
@@ -325,17 +325,17 @@ EXT_LIBRARIES: /mnt/external-library-joe, /mnt/external-library-andrea, /mnt/ext
 ```
 
 Joe and Andrea go to visit Japan. Joe creates a new "Japan" album which shares with Andrea via Joe's own Immich profile. Andrea contributes by adding photos to the same album.
-After the trip is over, the album "Japan" contains 200 pictures uploaded (owned) by Joe, and 250 owned by Andrea. Joe and Andrea cannot see each other Japan's photos in their timeline, only in album view.
+After the trip is over, the album "Japan" contains 200 pictures uploaded (owned) by Joe, and 250 owned by Andrea. Joe and Andrea cannot see each other's Japan photos in their timeline, only in album view.
 After making sure the pics have been uploaded to the Immich server (and backed up), they delete the pictures from their own devices to free up some space.
-Now one of them runs the `./relocator.sh` with the Pseudo `UserShared` feature enabled, and in a few seconds:
-- 450 pics are moved to an external library owned by `UserShared`
-- The same 450 pics are now owned by `UserShared` not by Joe or Andrea anymore
-- If `UserShared` has Partner Sharing enabled with Joe and Andrea they will both see the 450 pics in their timeline
-- The album "Japan" is still owned by Joe, it is still shared with Andrea and it still contains all the 450 pictures inside that both users can see in album view
+Now one of them runs `./relocator.sh` with the Pseudo `UserShared` feature enabled, and in a few seconds:
+- 450 pics are moved to an external library owned by `UserShared`.
+- The same 450 pics are now owned by `UserShared`, not by Joe or Andrea anymore.
+- If `UserShared` has Partner Sharing enabled with Joe and Andrea, they will both see the 450 pics in their timeline.
+- The album "Japan" is still owned by Joe, still shared with Andrea, and still contains all the 450 pictures inside that both users can see in album view.
 
-But it does not stop here. Joe and Andrea can still have their own private pictures in an entirely separate external library. These are the pictures that they decided not to share. Which will relocate, elsewhere, and will **not** change ownership.
+But it does not stop here. Joe and Andrea can still have their own private pictures in an entirely separate external library. These are the pictures they decided not to share; they will be relocated elsewhere and will **not** change ownership.
 
-Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a sub folder named after their user name (Storage Label).
+Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a subfolder named after their username (Storage Label).
 
 ### FOLDER STRUCTURE RESULT AFTER RELOCATION:
 ```
@@ -361,7 +361,7 @@ Joe's External Library
 |____ 20240806-102423.jpg
 
 Andrea's External Library
-|_ 2025-011 - Trip w Mum
+|_ 2025-11 - Trip w Mum
 |__ Andrea
 |___ Canon R6
 |____ 20251101-112823.jpg
@@ -374,33 +374,33 @@ Andrea's External Library
 Is the pic/video included in an album that is shared?
 - IF **YES** (album is shared):
 	- Relocate picture/video to `/mnt/external-library-usershared`
-		- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Shared)
+		- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Sharing)
 		- Update database
-	- IF **NO** (album is unshared):
-		- Relocate picture/video to User1/User2's External Libraries respectively
-		- **Do not** change ownership
-		- Update database
+- IF **NO** (album is unshared):
+	- Relocate picture/video to User1/User2's External Libraries respectively
+	- **Do not** change ownership
+	- Update database
 
 
 ### How to Enable the Pseudo `UserShared` feature
 
-1 - Make sure a pseudo user exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add Storage Label for this particular user and it is not considered in the `EXTERNAL_LIBRARIES_COUNT`. 
-Take note of the `UserShared` UUID number in Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED` replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
+1 - Make sure a pseudo user exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add a Storage Label for this particular user and it is not considered in the `EXTERNAL_LIBRARIES_COUNT`. 
+Take note of `UserShared`'s UUID in Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED`, replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
   
-2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to: `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
+2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
   
-3 - Add the actual path to `/mnt/external-library-usershared` to `DEST_SHARED` in the `.env` file.
+3 - Add the actual path (e.g. `/mnt/external-library-usershared`) to `DEST_SHARED` in the `.env` file.
 
 4 - Enable the [Storage Template Migration job](#storage-template-migration-job-optional) feature
   
-Done. The Pseudo `SharedUser` feature is now enabled.
+Done. The Pseudo `UserShared` feature is now enabled.
 
 #### LIMITATIONS (⚠ IMPORTANT):
-- The script only checks is the pic/video is contained in an album, and if that album is shared. If **yes**, then it relocates it to the shared external library, if **not** it relocates it to personal. It does not check if it is shared with Andrea or joe. So, if you share albums with multiple users, this feature will not fit you.
-- If items do not belong to, at least, one album, then the whole logic becomes way more fragile and predictable. Find if items are not in any albums via Immich GUI: Search Option -> Display options -> "Not in any album" to visualise any media that it is not in any album and add items to a shared or unshared album.
-- If you use this feature then make sure to delete any picture/video from your devices before to run the `relocator.sh` script. Immich's deduplication only works for files owned by the same user. But since ownership is changed, if you don't delete the files from partners' devices first you'll end up with as many duplicates as the shared files are.
+- The script only checks if the pic/video is contained in an album, and if that album is shared. If **yes**, it relocates it to the shared external library; if **no**, it relocates it to the personal library. It does not check if it is shared with Andrea or joe. So, if you share albums with multiple users, this feature may not suit you.
+- If items do not belong to, at least, one album, then the whole logic becomes far more fragile and unpredictable. Find items that are not in any album via the Immich GUI: Search Option -> Display options -> "Not in any album" to visualise any media not in an album and add them to a shared or unshared album.
+- If you use this feature then make sure to delete any picture/video from your devices before running the `relocator.sh` script. Immich's deduplication only works for files owned by the same user. But since ownership is changed, if you don't delete the files from partners' devices first you'll end up with as many duplicates as there are shared files.
 - **STACK OWNERSHIP INCONSISTENCY**: Immich Relocator only changes the ownership of an individual asset. When an asset that is part of a stack gets its ownership changed to UserShared, the stack record itself remains owned by the original user. This means the primary asset is now owned by UserShared while the stack container still belongs to the original owner, creating an inconsistent state. This may cause unexpected behavior when viewing or managing stacked photos. For stacked assets being relocated with ownership change, the script will warn you but will not skip them. If you want to avoid this issue, either unstack these photos before running the script, or do not use the Pseudo UserShared ownership-change feature on libraries containing stacks.
-- Immich Relocator only changes the ownership of an item, so things like faces and stacks stay with the old (original) owner. UserShared will not see these faces in their People section and Immich does not automatically re-generate faces for the new owner.
+- Immich Relocator only changes the ownership of an item, so things like faces and stacks stay with the original owner. UserShared will not see these faces in their People section and Immich does not automatically regenerate faces for the new owner.
 
 
 ---

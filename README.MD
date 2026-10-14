@@ -6,14 +6,20 @@
 
 Immich Relocator (formerly immich-migrate-to-external-library), can relocate all your pictures & videos from the Immich internal folder to one or more External Libraries of your choice and update the Immich database accordingly, so that you do not lose albums, stacks, faces, tags, etc.
 
-### Optional Advanced Features
-Immich Relocator can be configured with optional advanced features that will allow you to:
-- Trigger a [Storage Template Migration job](#storage-template-migration-job-optional) before relocating
-- [Folder Restructure](#folder-restructure-optional-but-recommended): reorganize the folder structure while relocating
-- [Pseudo UserShared](#pseudo-usershared---for-the-immich-partner--optional): 
-	- Differentiate the final destinations so that personal files are relocated to personal external library/ies and shared files to a shared external library
-	- Change ownership of files contained in shared albums to `UserShared` in bulk for partner sharing purpose
-- Use as many external libraries and users as you like
+### FEATURES:
+- Relocate all pic & videos to a Single or to Multiple External Libraries you chose (up to one per Immich user).
+- [Storage Template Migration job](#storage-template-migration-job-optional): Can run an unattended template migration right before relocating to final destination.
+- [Folder Restructure](#folder-restructure-optional-but-recommended): tidy-up even more the final shape of your folders.
+- [Pseudo UserShared](#pseudo-usershared---for-the-immich-partner--optional): change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
+- [Cron](#unattended--cron-usage): set and forget unattended scheduled relocations at the day/time you desire.
+- DB Backups: create a copy of your database before it modifies it.
+- Immich doesn't break. Even if your files have been relocated to an entirely different location it's like nothing has changed for Immich.
+- Duplicate prevention: no duplicates and no re-uploads after relocation, even with sync enabled on Immich mobile app.
+- Never lose albums, stacks, faces, tags, etc after relocation.
+- Safe mode: use `--dry-run` and `--dry-run --full` to estimate how many files would relocate without actually making any changes to your Immich.
+- Partial Relocation: use `--limit N` to relocate only a pre-determined portion of your files.
+- Every single feature is optional. You can easily configure Immich Relocator the way you like it.
+
 
 ### BENEFITS OF RELOCATING YOUR FILES TO AN EXTERNAL LIBRARY
 - Condense your files in one place: external library only (instead of external plus Immich's internal `upload` folder). 

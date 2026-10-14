@@ -15,10 +15,11 @@ Immich Relocator can be configured with optional advanced features that will all
 	- Change ownership of files contained in shared albums to `UserShared` in bulk for partner sharing purpose
 - Use as many external libraries and users as you like
 
-### BENEFITS OF RELOCATING YOUR FILES TO AN EXTERAL LIBRARY
+### BENEFITS OF RELOCATING YOUR FILES TO AN EXTERNAL LIBRARY
 - Condense your files in one place: external library only (instead of external plus Immich's internal `upload` folder). 
 - Post-process all your pictures and videos comfortably from a single place using the desktop DAM of your choice (e.g. digiKam, Lightroom, etc), pointing to external library
 - Prevent accidental issues by optionally set up your Immich access to the external library as read only. Now edit via desktop DAM, and browse remotely via Immich clients.
+- Overcome Storage Template limitations and keep your files **always** in a neat structure, breaking out of the current necessity for Storage Template Migration job to be run manually via Immich GUI. Immich Relocator, can automate it.
 
 ---
 

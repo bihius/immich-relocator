@@ -432,7 +432,7 @@ Done. The Pseudo `UserShared` feature is now enabled.
 
 You can schedule Immich Relocator via cron, but be aware:
 
-- If using the Pseudo `UserShared` feature, you should ensure that users have deleted the media from their own devices before the cron fires (see the "IMPORTANT" paragraph in the Pseudo `UserShared` section).
+- If using the Pseudo `UserShared` feature, you should ensure that users have deleted the media from their own devices before the cron fires (see the "LIMITATIONS" paragraph in the Pseudo `UserShared` section).
 - The lock file prevents overlapping runs. If a previous run is still going, the new one exits immediately.
 - Also remember that the Storage Template Migration job (if enabled) can take a long time for very large libraries. If you keep using Immich Relocator regularly, this process will become much faster, but it still depends on how many pictures/videos you usually upload to the server.
 

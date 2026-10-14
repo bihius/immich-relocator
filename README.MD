@@ -8,10 +8,10 @@ Immich Relocator (formerly immich-migrate-to-external-library), can relocate all
 
 ### FEATURES:
 - Relocate all pic & videos to a Single or to Multiple External Libraries you chose (up to one per Immich user).
-- [Storage Template Migration job](#storage-template-migration-job-optional): Can run an unattended template migration right before relocating to final destination.
-- [Folder Restructure](#folder-restructure-optional-but-recommended): tidy-up even more the final shape of your folders.
-- [Pseudo UserShared](#pseudo-usershared---for-the-immich-partner--optional): change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
-- [Cron](#unattended--cron-usage): set and forget unattended scheduled relocations at the day/time you desire.
+- Storage Template Migration job: Can run an unattended template migration right before relocating to final destination.
+- Folder Restructure: tidy-up even more the final shape of your folders.
+- Pseudo UserShared: change the ownership of selected files, so that you can set a shared External Library for you and your partner (our attempt to overcome the limitations of Partner Sharing which only allows to share all or nothing).
+- Cron: set and forget unattended scheduled relocations at the day/time you desire.
 - DB Backups: create a copy of your database before it modifies it.
 - Immich doesn't break. Even if your files have been relocated to an entirely different location it's like nothing has changed for Immich.
 - Duplicate prevention: no duplicates and no re-uploads after relocation, even with sync enabled on Immich mobile app.

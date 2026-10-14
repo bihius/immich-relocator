@@ -383,8 +383,8 @@ Is the pic/video included in an album that is shared?
 
 ### How to Enable the Pseudo `UserShared` feature
 
-1 - Make sure a "pseudo user" exists on your Immich server. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add a Storage Label for this particular user and it is not considered in the `EXTERNAL_LIBRARIES_COUNT`. 
-Take note of `UserShared`'s UUID in Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED`, replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
+1 - Make sure a "pseudo user" exists on your Immich server. You can name it `UserShared`, or however you like. This is a separate user that contains only items that both partners want to see in their timeline and album views. You do not need to add a Storage Label for this particular user, and it is not considered in the `EXTERNAL_LIBRARIES_COUNT`. 
+Take note of `UserShared`'s UUID in the Immich GUI: Administration -> Users -> Profile -> ID, and add it to `OWNER_SHARED`, replacing the dummy `00000000-0000-0000-0000-000000000000` value in the `.env` file.
   
 2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
   

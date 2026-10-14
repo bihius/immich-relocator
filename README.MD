@@ -373,8 +373,8 @@ Andrea's External Library
 Is the pic/video included in an album that is shared?
 - IF **YES** (album is shared):
 	- Relocate picture/video to `/mnt/external-library-usershared`
-		- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Sharing)
-		- Update database
+	- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Sharing)
+	- Update database
 - IF **NO** (album is unshared):
 	- Relocate picture/video to User1/User2's External Libraries respectively
 	- **Do not** change ownership

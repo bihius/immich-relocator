@@ -29,17 +29,17 @@ Immich Relocator (formerly immich-migrate-to-external-library) can relocate all 
 
 ---
 
-## Table of Content
+## Table of Contents
 - [The Technical Stuff](#the-technical-stuff)
 - [Prerequisites](#prerequisites)
 - [How to Install & Configure](#how-to-install--configure)
 - [How to Use Immich Relocator](#how-to-use-immich-relocator)
+- [Restoring from a Database Backup](#restoring-from-a-database-backup)
 - [Storage Template Migration job (Optional)](#storage-template-migration-job-optional)
 - [Folder Restructure (Optional)](#folder-restructure-optional)
 - [Pseudo UserShared - For the Immich Partner (Optional)](#pseudo-usershared---for-the-immich-partner--optional)
 - [Troubleshooting](#troubleshooting)
 - [Unattended / Cron usage](#unattended--cron-usage)
-- [Restoring from a Database Backup](#restoring-from-a-database-backup)
 
 ---
 
@@ -130,8 +130,8 @@ Fill in every non-optional value present in the `.env.example` template. Follow 
 The easiest way to do this is to run the script for the first time using the `--dry-run` flag and follow the instructions about how to create the symlink:
 ```bash
 ./relocator.sh --dry-run
-# → if it errors with "Symlink ... not found. Create it: sudo ln -s ..."
-#   Run that suggested command exactly as shown, then re-run --dry-run to confirm it works
+# If it errors with "Symlink ... not found. Create it: sudo ln -s ..."
+# Run the suggested command as shown, then re-run --dry-run to confirm it works
 ```
 The command will look something like:
 ```bash
@@ -193,6 +193,35 @@ The command above limits the script to relocate only up to 1000 files (pictures 
 <br>
 <div align="center">
 
+## Restoring from a Database Backup
+
+</div>
+
+
+If something goes wrong:
+```bash
+# Stop Immich
+cd $COMPOSE_DIR && docker compose stop immich-server
+
+```
+
+Double-check where the files are. 
+In case of issues, the script should automatically move the files back to their original location (Immich internal "upload" folder), but if for whatever reason this did not happen, move the files manually back to their source.
+
+Then:
+```bash
+# Restore
+docker exec -i immich_postgres psql -U postgres immich < ~/immich-relocator/db-backups/immich_backup_YYYYMMDD_HHMM.sql
+
+# Start Immich
+docker compose up -d immich-server
+```
+
+---
+
+<br>
+<div align="center">
+
 ## Storage Template Migration job (Optional)
 
 </div>
@@ -226,11 +255,10 @@ Done.
 </div>
 
 
-```
-⚠ IMPORTANT: This feature depends on:
-- Multi External Libraries are enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
-- Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
-```
+> [!NOTE]
+> This feature depends on:
+> - Multi External Libraries are enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
+> - Storage Template Migration job feature is enabled (you added a correct API key in relevant block)
 
 Immich Relocator can reorganise your final folder structure just before relocating files to the external library.
 
@@ -279,10 +307,10 @@ FOLDER_RESTRUCTURE=true
   
 Done. The Folder Restructure feature is now enabled. The safest way to test it for the first time is to use `./relocator.sh --dry-run --full`, which will run the Storage Template Migration job before telling you how many files would be relocated. If everything looks good to you, go ahead and run `./relocator.sh` with or without the `--limit N` flag.
 
-
-LIMITATIONS: If you notice doubles during the next external library rescan, inspect the full path of each photo using the "i" icon via the Immich GUI. It is highly likely that the paths of the doubled items differ in casing between the two versions.
+> [!CAUTION]
+> If you notice doubles during the next external library rescan, inspect the full path of each photo using the "i" icon via the Immich GUI. It is highly likely that the paths of the doubled items differ in casing between the two versions.
 If your external library destination is mounted via CIFS/SMB (most NAS shares), the filesystem is case-insensitive. If a directory with different casing already exists at the destination (e.g. from a prior run or Immich's own indexing), the file may be placed in a directory with the wrong casing while the database records the intended case. This causes Immich to treat the file as new on the next scan, generating a duplicate. 
-`{{make}}` or `{{model}}` present in the Storage Template are the likely reason for failure here, inspect the casing and try using `{{model}}` only, instead of `{{make}}_{{model}}`, in your Storage Template to see if that prevents the issue in the future.
+> `{{make}}` or `{{model}}` present in the Storage Template are the likely reason for failure here, inspect the casing and try using `{{model}}` only, instead of `{{make}}_{{model}}`, in your Storage Template to see if that prevents the issue in the future.
 
 
 ---
@@ -293,14 +321,12 @@ If your external library destination is mounted via CIFS/SMB (most NAS shares), 
 
 </div>
 
-
-```
-⚠ IMPORTANT: This feature depends on:
-- Multi External Libraries are enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
-- Storage Template Migration job feature is enabled (you added a correct API key in the relevant block)
-- Every pic/video of the Immich library has been added to at least one album
-- For a neater result, enabling the Folder Restructure feature is also suggested
-```
+> [!NOTE]
+> This feature depends on:
+> - Multi External Libraries are enabled (EXTERNAL_LIBRARIES_COUNT is bigger than 1)
+> - Storage Template Migration job feature is enabled (you added a correct API key in the relevant block)
+> - Every pic/video of the Immich library has been added to at least one album
+> - For a neater result, enabling the Folder Restructure feature is also suggested
 
 ### Why this feature exists
 
@@ -320,7 +346,7 @@ Immich Relocator helps users to almost never having to interact with the `UserSh
 User1: Joe
 User2: Andrea
 User3: UserShared
-EXT_LIBRARIES: /mnt/external-library-joe, /mnt/external-library-andrea, /mnt/external-library-usershared
+EXT_LIBRARIES: /mnt/ext-lib-joe, /mnt/ext-lib-andrea, /mnt/ext-lib-usershared
 ```
 
 Joe and Andrea go to visit Japan. Joe creates a new "Japan" album which shares with Andrea via Joe's own Immich profile. Andrea contributes by adding photos to the same album.
@@ -336,7 +362,7 @@ But it does not stop here. Joe and Andrea can still have their own private pictu
 
 Most importantly, Joe and Andrea can still retrieve who took which photo in Japan, as their media will be safely stored in a subfolder named after their UUID or Storage Label.
 
-### FOLDER STRUCTURE RESULT AFTER RELOCATION:
+### Folder Restructure Result After Relocation:
 ```
 UserShared's External Library
 |_ 2023-02 - Japan
@@ -372,7 +398,7 @@ Andrea's External Library
 ### Logic:
 Is the pic/video included in an album that is shared?
 - IF **YES** (album is shared):
-	- Relocate picture/video to `/mnt/external-library-usershared`
+	- Relocate picture/video to `/mnt/ext-lib-usershared`
 	- Change ownership of files to `UserShared` (so that now shared pics can be shown in timeline, via Partner Sharing)
 	- Update database
 - IF **NO** (album is unshared):
@@ -388,18 +414,18 @@ Take note of `UserShared`'s UUID in the Immich GUI: Administration -> Users -> P
   
 2 - Make sure `UserShared` has its own dedicated external library, and that `UserShared` actually owns it. Add the external library name to `LIBRARY_NAME_SHARED` exactly as it is shown on the Immich GUI.
   
-3 - Add the actual path (e.g. `/mnt/external-library-usershared`) to `DEST_SHARED` in the `.env` file.
+3 - Add the actual path (e.g. `/mnt/ext-lib-usershared`) to `DEST_SHARED` in the `.env` file.
 
 4 - Enable the [Storage Template Migration job](#storage-template-migration-job-optional) feature
   
 Done. The Pseudo `UserShared` feature is now enabled.
 
-#### LIMITATIONS (⚠ IMPORTANT):
-- The script **only checks if the pic/video is contained in an album**, and if that album is shared. If **yes**, it relocates it to the shared external library; if **no**, it relocates it to the personal library. It does not check if it is shared with Andrea or Joe. So, **if you share albums with multiple users, this feature may not suit you**.
-- If items do not belong to, at least, one album, then the whole logic becomes far more fragile and unpredictable. Find items that are not in any album via the Immich GUI: Search Option -> Display options -> "Not in any album" to visualise any media not in an album and add them to a shared or unshared album.
-- If you use this feature then make sure to delete any picture/video from your devices before running the `relocator.sh` script. Immich's deduplication only works for files owned by the same user. But since ownership is changed, if you don't **delete the files from partners' devices first you'll end up with as many duplicates as there are shared files**.
-- **Stack ownership inconsistency**. Immich Relocator only changes the ownership of an individual asset. When an asset that is part of a stack gets its ownership changed to UserShared, the stack record itself remains owned by the original user. This means the primary asset is now owned by UserShared while the stack container still belongs to the original owner, creating an inconsistent state. This may cause unexpected behavior when viewing or managing stacked photos. For stacked assets being relocated with ownership change, the script will warn you but will not skip them. If you want to avoid this issue, either unstack these photos before running the script, or avoid using the Pseudo UserShared feature entirely on libraries containing stacks.
-- Immich Relocator only changes the ownership of an item, so things like **faces and stacks stay with the original owner**. UserShared will not see these faces in their People section and Immich does not automatically regenerate faces for the new owner.
+> [!WARNING]
+> - The script **only checks if the pic/video is contained in an album**, and if that album is shared. If **yes**, it relocates it to the shared external library; if **no**, it relocates it to the personal library. It does not check if it is shared with Andrea or Joe. So, **if you share albums with multiple users, this feature may not suit you**.
+> - If items do not belong to, at least, one album, then the whole logic becomes far more fragile and unpredictable. Find items that are not in any album via the Immich GUI: Search Option -> Display options -> "Not in any album" to visualise any media not in an album and add them to a shared or unshared album.
+> - If you use this feature then make sure to delete any picture/video from your devices before running the `relocator.sh` script. Immich's deduplication only works for files owned by the same user. But since ownership is changed, if you don't **delete the files from partners' devices first you'll end up with as many duplicates as there are shared files**.
+> - **Stack ownership inconsistency**. Immich Relocator only changes the ownership of an individual asset. When an asset that is part of a stack gets its ownership changed to UserShared, the stack record itself remains owned by the original user. This means the primary asset is now owned by UserShared while the stack container still belongs to the original owner, creating an inconsistent state. This may cause unexpected behavior when viewing or managing stacked photos. For stacked assets being relocated with ownership change, the script will warn you but will not skip them. If you want to avoid this issue, either unstack these photos before running the script, or avoid using the Pseudo UserShared feature entirely on libraries containing stacks.
+> - Immich Relocator only changes the ownership of an item, so things like **faces and stacks stay with the original owner**. UserShared will not see these faces in their People section and Immich does not automatically regenerate faces for the new owner.
 
 
 ---
@@ -443,32 +469,6 @@ Example cron (runs daily at 03:00):
 
 
 ---
-<br>
-<div align="center">
-
-## Restoring from a Database Backup
-
-</div>
-
-
-If something goes wrong:
-```bash
-# Stop Immich
-cd $COMPOSE_DIR && docker compose stop immich-server
-
-```
-
-Double-check where the files are. 
-In case of issues, the script should automatically move the files back to their original location (Immich internal "upload" folder), but if for whatever reason this did not happen, move the files manually back to their source.
-
-Then:
-```bash
-# Restore
-docker exec -i immich_postgres psql -U postgres immich < ~/immich-relocator/db-backups/immich_backup_YYYYMMDD_HHMM.sql
-
-# Start Immich
-docker compose up -d immich-server
-```
 
 <br>
 <div align="center">

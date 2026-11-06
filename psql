@@ -1,4 +1,5 @@
 #!/bin/bash
+# psql runs inside the Postgres container, so it connects over the container's own
+# socket. PGHOST is deliberately not forwarded: a container IP changes on restart.
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-immich_postgres}"
-docker exec -i -e PGUSER="$PGUSER" -e PGPASSWORD="$PGPASSWORD" -e PGDATABASE="$PGDATABASE" -e PGHOST="$PGHOST" -e PGPORT="$PGPORT" "$POSTGRES_CONTAINER" psql "$@"
-
+docker exec -i -e PGUSER="$PGUSER" -e PGPASSWORD="$PGPASSWORD" -e PGDATABASE="$PGDATABASE" -e PGPORT="$PGPORT" "$POSTGRES_CONTAINER" psql "$@"

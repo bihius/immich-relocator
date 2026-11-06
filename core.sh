@@ -36,7 +36,6 @@ source "$(dirname "$0")/.env"
 : "${OWNER_SHARED:?ERROR: OWNER_SHARED not set in .env}"
 : "${PGDATABASE:?ERROR: PGDATABASE not set in .env}"
 : "${PGUSER:?ERROR: PGUSER not set in .env}"
-: "${PGHOST:?ERROR: PGHOST not set in .env}"
 : "${PGPORT:?ERROR: PGPORT not set in .env}"
 : "${PGPASSWORD:?ERROR: PGPASSWORD not set in .env}"
 
@@ -149,7 +148,9 @@ done
 trap 'rm -f "$LOCK_FILE"' EXIT
 
 export LC_ALL=C
-export PGDATABASE PGUSER PGHOST PGPORT PGPASSWORD
+export PGDATABASE PGUSER PGPORT PGPASSWORD
+# Only needed when a system psql is used instead of the wrapper (which runs inside the container).
+if [[ -n "${PGHOST:-}" ]]; then export PGHOST; fi
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-immich_postgres}"
 export POSTGRES_CONTAINER
 
@@ -210,7 +211,7 @@ WHERE "deletedAt" IS NULL
   AND "libraryId" IS NULL;
 EOF
   ); then
-    echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+    echo "ERROR: Failed to query database. Check PGUSER, PGPASSWORD and POSTGRES_CONTAINER in .env." >&2
     exit 1
   fi
   log "Files to relocate: $COUNT"
@@ -223,7 +224,7 @@ if [[ "$ENABLE_SHARED" == true ]]; then
 SELECT id FROM library WHERE name = :'lib_name' AND "deletedAt" IS NULL;
 EOF
   ); then
-    echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+    echo "ERROR: Failed to query database. Check PGUSER, PGPASSWORD and POSTGRES_CONTAINER in .env." >&2
     exit 1
   fi
   if [[ -z "$LIB_ID_SHARED" ]]; then
@@ -237,7 +238,7 @@ if [[ "$EXTERNAL_LIBRARIES_COUNT" -eq 1 ]]; then
 SELECT id FROM library WHERE name = :'lib_name' AND "deletedAt" IS NULL;
 EOF
   ); then
-    echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+    echo "ERROR: Failed to query database. Check PGUSER, PGPASSWORD and POSTGRES_CONTAINER in .env." >&2
     exit 1
   fi
   if [[ -z "$LIB_ID_SINGLE" ]]; then
@@ -250,7 +251,7 @@ else
 SELECT id FROM library WHERE name = :'lib_name' AND "deletedAt" IS NULL;
 EOF
     ); then
-      echo "ERROR: Failed to query database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+      echo "ERROR: Failed to query database. Check PGUSER, PGPASSWORD and POSTGRES_CONTAINER in .env." >&2
       exit 1
     fi
     if [[ -z "$lib_id" ]]; then
@@ -343,7 +344,7 @@ WHERE a."deletedAt" IS NULL
   AND $PATH_FILTER;
 EOF
 ); then
-  echo "ERROR: Failed to query assets from database. Check PGHOST, PGUSER, PGPASSWORD in .env." >&2
+  echo "ERROR: Failed to query assets from database. Check PGUSER, PGPASSWORD and POSTGRES_CONTAINER in .env." >&2
   exit 1
 fi
 
